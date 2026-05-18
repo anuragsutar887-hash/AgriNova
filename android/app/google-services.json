@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "155346528968",
+    "project_id": "android0-65f79",
+    "storage_bucket": "android0-65f79.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:155346528968:android:39cdc3938c148cf3c993fd",
+        "android_client_info": {
+          "package_name": "com.agriai.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "YOUR_FIREBASE_API_KEY_HERE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

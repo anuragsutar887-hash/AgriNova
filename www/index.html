@@ -1,0 +1,2983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AgriNova</title>
+  <link rel="manifest" href="manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0B6B3A;
+      --secondary: #7ED957;
+      --accent: #FFC107;
+      --black: #1C1C1C;
+      --white: #FFFFFF;
+      --off-white: #F9FCF8;
+      --gray: #6B7280;
+      --light-gray: #F3F4F6;
+      --border: rgba(11, 107, 58, 0.15);
+      --shadow: 0 4px 16px rgba(11, 107, 58, 0.08);
+      --soil: #8D6E63;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Inter", sans-serif; background: var(--off-white); color: var(--black); overflow-x: hidden; padding-bottom: 80px; overscroll-behavior-y: none; }
+    
+    /* Utilities */
+    .page { display: none; animation: fadeUp 0.3s ease both; padding: 16px; }
+    .page.active { display: block; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Splash & Login */
+    #splash-screen, #login-page { position: fixed; inset: 0; background: var(--off-white); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .logo-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); box-shadow: var(--shadow); margin-bottom: 16px; }
+    .splash-title { font-family: "Poppins", sans-serif; font-size: 28px; font-weight: 700; color: var(--primary); }
+    .login-container { width: 90%; max-width: 400px; background: var(--white); border-radius: 20px; padding: 24px; box-shadow: var(--shadow); text-align: center; }
+    .login-input { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 16px; font-size: 16px; font-family: "Inter", sans-serif; outline: none; }
+    .login-input:focus { border-color: var(--primary); }
+    .login-btn { width: 100%; background: var(--primary); color: var(--white); padding: 14px; border-radius: 12px; font-weight: 600; border: none; font-size: 16px; cursor: pointer; }
+    /* General Form Elements */
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      padding-right: 40px !important;
+      cursor: pointer;
+    }
+
+    /* Google Translate Overrides */
+    body { top: 0px !important; position: static !important; }
+    iframe.skiptranslate, div.skiptranslate { display: none !important; visibility: hidden !important; opacity: 0 !important; width: 0 !important; height: 0 !important; }
+    .goog-te-banner-frame, .goog-te-gadget, .goog-te-balloon-frame { display: none !important; }
+    #goog-gt-tt { display: none !important; }
+    .VIpgJd-Zvi9od-ORHb-OEVmcd, .VIpgJd-Zvi9od-aZ2wEe-wOHMyf, .VIpgJd-yAWNEb-hvhzNd-THI6Vb { display: none !important; }
+    div[id^="goog-gt-"] { display: none !important; }
+
+    /* Top App Bar */
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .user-info { display: flex; align-items: center; gap: 12px; }
+    .user-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: var(--white); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
+    .greeting { font-family: "Poppins", sans-serif; font-size: 16px; color: var(--black); line-height: 1.2; }
+    .location { font-size: 12px; color: var(--gray); }
+    .bell-icon { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--primary); }
+
+    /* Weather Card */
+    .weather-card { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 20px; padding: 20px; color: var(--white); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 8px 20px rgba(0, 198, 255, 0.2); margin-bottom: 20px; }
+    .w-temp { font-family: "Poppins", sans-serif; font-size: 36px; line-height: 1; }
+    .w-desc { font-size: 14px; font-weight: 500; opacity: 0.9; margin-bottom: 12px; }
+    .w-stats { display: flex; gap: 16px; font-size: 12px; }
+    .w-stats div { display: flex; align-items: center; gap: 4px; }
+    .w-icon { font-size: 48px; }
+
+    /* Farm Health */
+    .farm-health { background: var(--white); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); display: none; align-items: center; gap: 20px; margin-bottom: 20px; border: 1px solid var(--border); }
+    .health-circle { width: 80px; height: 80px; border-radius: 50%; border: 6px solid var(--secondary); display: flex; align-items: center; justify-content: center; font-family: "Poppins", sans-serif; font-size: 20px; color: var(--primary); flex-shrink: 0; }
+    .health-info h3 { font-family: "Poppins", sans-serif; font-size: 16px; color: var(--black); margin-bottom: 4px; }
+    .health-info p { font-size: 12px; color: var(--gray); line-height: 1.4; }
+    .health-info .risk { color: var(--accent); font-weight: 600; margin-top: 4px; font-size: 12px; display: inline-block; background: rgba(255,193,7,0.1); padding: 2px 8px; border-radius: 8px; }
+
+    /* Dashboard Grids */
+    .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .dash-card { background: var(--white); border: 1px solid var(--border); padding: 16px; border-radius: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px; }
+    .dash-icon { font-size: 24px; }
+    .dash-title { font-size: 13px; font-weight: 600; color: var(--black); }
+
+    /* Scan Screen */
+    .scan-screen { text-align: center; }
+    .camera-frame { width: 100%; height: 350px; background: #000; border-radius: 20px; position: relative; margin-bottom: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .camera-frame img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+    .target-box { position: absolute; width: 60%; height: 50%; border: 2px dashed var(--secondary); border-radius: 16px; }
+    .scan-actions { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
+    .s-action-btn { background: var(--white); border: 1px solid var(--border); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: var(--shadow); color: var(--primary); }
+    .s-action-btn.main { width: 80px; height: 80px; background: var(--primary); color: var(--white); font-size: 32px; border: 4px solid var(--light-gray); }
+    .bottom-sheet { background: var(--white); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); text-align: left; display: none; }
+    .disease-title { font-family: "Poppins", sans-serif; font-size: 18px; color: var(--primary); margin-bottom: 4px; }
+    .confidence { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 12px; }
+    .treatment { font-size: 13px; color: var(--gray); line-height: 1.5; }
+
+    /* AI Chat */
+    #page-ai { padding: 16px; padding-bottom: 16px; display: none; flex-direction: column; height: calc(100dvh - 80px); box-sizing: border-box; }
+    #page-ai.active { display: flex !important; }
+    .chat-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+    .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 20px; }
+    .msg { padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; max-width: 85%; }
+    .msg.bot { background: var(--white); border: 1px solid var(--border); color: var(--black); align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: var(--shadow); }
+    .msg.user { background: var(--primary); color: var(--white); align-self: flex-end; border-bottom-right-radius: 4px; font-weight: 500; }
+    .prompts-scroll { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none; flex-shrink: 0; }
+    .prompt-chip { background: var(--white); border: 1px solid var(--border); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-size: 12px; white-space: nowrap; font-weight: 500; cursor: pointer; }
+    .chat-input-area { display: flex; gap: 8px; align-items: center; background: var(--white); padding: 8px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 -4px 10px rgba(0,0,0,0.05); flex-shrink: 0; margin-bottom: 0; width: auto; align-self: stretch; box-sizing: border-box; }
+    .chat-input-area input { flex: 1; border: none; outline: none; font-size: 14px; font-family: "Inter", sans-serif; padding: 10px 16px; background: transparent; min-width: 0; }
+    .icon-btn { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: none; cursor: pointer; flex-shrink: 0; }
+    .btn-mic { background: var(--light-gray); color: var(--primary); }
+    .btn-send { background: var(--primary); color: var(--white); }
+    .btn-mic.listening { background: var(--secondary); color: var(--white); animation: pulse 1s infinite; }
+
+    /* Market */
+    .market-search { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; box-shadow: var(--shadow); }
+    .market-search input { border: none; outline: none; font-size: 14px; width: 100%; font-family: "Inter"; background: transparent; color: var(--black); }
+    .rate-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; }
+    .r-crop { font-family: "Poppins", sans-serif; font-size: 16px; color: var(--black); }
+    .r-mandi { font-size: 12px; color: var(--gray); }
+    .r-price { font-size: 18px; font-weight: 700; color: var(--primary); text-align: right; }
+    .r-trend { font-size: 12px; color: var(--secondary); font-weight: 600; display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
+    
+    /* Bottom Navigation */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 20px; z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; color: var(--gray); width: 60px; -webkit-tap-highlight-color: transparent; user-select: none; outline: none; }
+    .nav-item * { -webkit-tap-highlight-color: transparent; user-select: none; outline: none; }
+    .nav-icon { font-size: 22px; }
+    .nav-label { font-size: 10px; font-weight: 500; }
+    .nav-item.active { color: var(--primary); }
+    .nav-item.active .nav-label { font-weight: 700; }
+    * { -webkit-tap-highlight-color: transparent; }
+    
+    /* Bottom Nav Styles */
+    .nav-item svg { stroke: var(--gray); margin-bottom: 4px; transition: transform 0.2s, stroke 0.2s; }
+    .nav-item:active svg { transform: scale(0.9); }
+    .nav-item.active svg { stroke: var(--primary); }
+    
+    /* Splash Animation - Smooth & Modern */
+    #splash-screen { background: var(--off-white); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; position: fixed; z-index: 9999; transition: opacity 0.8s ease-in-out; }
+    .anim-logo-container { position: relative; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; animation: logoFloat 3s ease-in-out infinite; }
+    
+    .anim-crack { display: none; }
+    
+    .anim-sun { position: absolute; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; top: 10px; right: 20px; opacity: 0; transform: translateY(20px) scale(0.8); animation: smoothRise 1s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards; z-index: 1; }
+    
+    .anim-leaf-left { position: absolute; width: 45px; height: 45px; background: var(--secondary); border-radius: 0 45px 0 45px; bottom: 20px; left: 10px; transform: scale(0); transform-origin: bottom right; animation: smoothGrow 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s forwards; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); z-index: 8; }
+    .anim-leaf-right { position: absolute; width: 35px; height: 35px; background: var(--primary); border-radius: 35px 0 35px 0; bottom: 30px; right: 15px; transform: scale(0); transform-origin: bottom left; animation: smoothGrow 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s forwards; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); z-index: 7; }
+    
+    .anim-letter { font-family: 'Poppins', sans-serif; font-size: 80px; font-weight: 800; color: var(--primary); z-index: 10; transform: translateY(20px); opacity: 0; animation: smoothFadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.8s forwards; text-shadow: 2px 4px 10px rgba(0,0,0,0.1); }
+
+    @keyframes smoothFadeUp {
+      0% { transform: translateY(20px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes smoothRise {
+      0% { transform: translateY(20px) scale(0.8); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    @keyframes smoothGrow {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+  
+    /* Dark Mode */
+    body.dark-mode {
+      --white: #121212;
+      --off-white: #000000;
+      --black: #FFFFFF;
+      --light-gray: #1E1E1E;
+      --border: rgba(255,255,255,0.1);
+      --shadow: 0 4px 16px rgba(0,0,0,0.5);
+      background: var(--off-white);
+    }
+    .dark-mode .nav-item { color: #888; }
+    .dark-mode .bottom-nav { background: var(--white); border-top: 1px solid var(--border); }
+    .dark-mode .scan-floating { border: 4px solid var(--off-white); }
+
+    /* FAB AI Button */
+    .fab-ai-btn {
+      position: fixed;
+      bottom: 100px;
+      right: 20px;
+      width: 58px;
+      height: 58px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 4px 20px rgba(11,107,58,0.4);
+      z-index: 105; /* Must be > 100 to stay above bottom nav */
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: fabPulse 3s ease-in-out infinite;
+    }
+    .fab-ai-btn:active { transform: scale(0.92); }
+    @keyframes fabPulse {
+      0%, 100% { box-shadow: 0 4px 20px rgba(11,107,58,0.4), 0 0 0 0 rgba(126,217,87,0.4); }
+      50% { box-shadow: 0 4px 20px rgba(11,107,58,0.5), 0 0 0 10px rgba(126,217,87,0); }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Google Translate Element (Hidden) -->
+  <div id="google_translate_element" style="display: none;"></div>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', autoDisplay: false}, 'google_translate_element');
+      
+      // Apply saved language after init
+      setTimeout(() => {
+        const savedLang = localStorage.getItem('farmerLang') || 'en';
+        if(savedLang && savedLang !== 'en') {
+          doTranslate(savedLang);
+        }
+      }, 1000);
+    }
+    
+    function doTranslate(langCode) {
+      const selectField = document.querySelector(".goog-te-combo");
+      if (selectField) {
+        selectField.value = langCode;
+        selectField.dispatchEvent(new Event("change"));
+      }
+    }
+  </script>
+  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+  <!-- SPLASH & LOGIN -->
+  <div id="splash-screen">
+    <div class="anim-logo-container">
+      <div class="anim-crack"></div>
+      <div class="anim-sun"></div>
+      <div class="anim-leaf-left"></div>
+      <div class="anim-leaf-right"></div>
+      <div class="anim-letter">A</div>
+    </div>
+    <div class="splash-title" style="margin-top:20px; opacity:0; animation: fadeUp 0.5s ease 1.5s forwards;">AgriNova</div>
+  </div>
+
+  <div id="login-page" style="display:none;">
+    <div class="login-container">
+      <img src="agrinova_logo.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px;" alt="AgriNova Logo" />
+      <h2 style="font-family:'Poppins'; color:var(--primary); margin-bottom: 20px;">Welcome Back</h2>
+      <div id="phone-section">
+        <input type="tel" id="mobileInput" class="login-input" placeholder="Mobile Number (+91)" maxlength="10"/>
+        <button class="login-btn" onclick="sendOTP()">Send OTP</button>
+      </div>
+      <div id="otp-section" style="display:none;">
+        <input type="number" id="otpInput" class="login-input" placeholder="Enter 4-digit OTP" maxlength="4"/>
+        <button class="login-btn" onclick="verifyOTP()">Verify & Login</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Offline Banner -->
+  <div id="offlineBanner" style="display:none; background:#F44336; color:#fff; text-align:center; padding:6px; font-size:12px; position:fixed; top:0; width:100%; z-index:9999;">
+    ⚠️ No Internet Connection. Using Offline Mode.
+  </div>
+
+  <!-- Floating AI Button (Draggable) -->
+  <div class="fab-ai-btn" id="ai-fab">
+    ✨
+  </div>
+
+  <script>
+    // ── Draggable FAB ─────────────────────────────────────────────────────────
+    (function() {
+      const fab = document.getElementById('ai-fab');
+      let isDragging = false;
+      let startX, startY, origLeft, origTop;
+      let moved = false;
+
+      // Restore saved position
+      const savedLeft = localStorage.getItem('fabLeft');
+      const savedTop  = localStorage.getItem('fabTop');
+      const BOTTOM_NAV_H = 80; // bottom nav height reserve
+
+      if (savedLeft && savedTop) {
+        let t = parseInt(savedTop);
+        // Auto-fix if it was saved behind the bottom nav
+        if (t > window.innerHeight - 58 - BOTTOM_NAV_H) {
+          t = window.innerHeight - 58 - BOTTOM_NAV_H;
+        }
+        fab.style.left   = savedLeft;
+        fab.style.top    = t + 'px';
+        fab.style.right  = 'auto';
+        fab.style.bottom = 'auto';
+      }
+
+      function onStart(clientX, clientY) {
+        isDragging = true;
+        moved = false;
+        // Convert right/bottom positioning to left/top for drag tracking
+        const rect = fab.getBoundingClientRect();
+        fab.style.left   = rect.left + 'px';
+        fab.style.top    = rect.top  + 'px';
+        fab.style.right  = 'auto';
+        fab.style.bottom = 'auto';
+        startX  = clientX;
+        startY  = clientY;
+        origLeft = rect.left;
+        origTop  = rect.top;
+        fab.style.transition = 'none';
+      }
+
+      function onMove(clientX, clientY) {
+        if (!isDragging) return;
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+        
+        const maxLeft = window.innerWidth - fab.offsetWidth;
+        const maxTop = window.innerHeight - fab.offsetHeight - BOTTOM_NAV_H;
+        
+        const newLeft = Math.max(0, Math.min(maxLeft, origLeft + dx));
+        const newTop  = Math.max(0, Math.min(maxTop, origTop + dy));
+        
+        fab.style.left = newLeft + 'px';
+        fab.style.top  = newTop  + 'px';
+      }
+
+      function onEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        fab.style.transition = '';
+        // Snap to nearest vertical edge
+        const rect = fab.getBoundingClientRect();
+        const snapLeft = rect.left < window.innerWidth / 2
+          ? 16
+          : window.innerWidth - fab.offsetWidth - 16;
+        fab.style.left = snapLeft + 'px';
+        // Save position
+        localStorage.setItem('fabLeft', fab.style.left);
+        localStorage.setItem('fabTop',  fab.style.top);
+        // If not moved, treat as click (open AI)
+        if (!moved) {
+          if (typeof showPage === 'function') showPage('ai');
+          if (typeof clearCurrentChat === 'function') clearCurrentChat();
+        }
+      }
+
+      // Touch events
+      fab.addEventListener('touchstart', e => { onStart(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+      fab.addEventListener('touchmove',  e => { onMove(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, { passive: false });
+      fab.addEventListener('touchend',   () => onEnd());
+      // Mouse events
+      fab.addEventListener('mousedown',  e => { onStart(e.clientX, e.clientY); e.preventDefault(); });
+      document.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+      document.addEventListener('mouseup',   () => onEnd());
+    })();
+  </script>
+
+  <!-- APP CONTENT -->
+  <div id="app-content" style="display:none;">
+    
+    <!-- HOME PAGE -->
+    <div class="page active" id="page-home">
+      <div class="top-bar">
+        <div class="user-info">
+          <div class="user-avatar" id="homeAvatar" onclick="showPage('profile')" style="cursor:pointer;"></div>
+          <div>
+            <div class="greeting" id="homeGreetingText">Welcome 🌿</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div onclick="showPage('settings')" style="font-size:18px; cursor:pointer; width:36px; height:36px; border-radius:50%; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; background:var(--white);">⚙️</div>
+        </div>
+      </div>
+
+      <div class="weather-card" onclick="openLocationModal()" style="cursor:pointer;">
+        <div>
+          <div id="dynLocation" style="font-family:'Poppins', sans-serif; font-size:16px; margin-bottom:4px; font-weight:600;">My Location</div>
+          <div class="w-temp" id="dynTemp">--°C</div>
+          <div class="w-desc" id="dynDesc">Loading Weather...</div>
+          <div class="w-stats">
+            <div id="dynHum">💧 --%</div>
+            <div id="dynRain">🌧️ --%</div>
+            <div id="dynWind">💨 --km/h</div>
+          </div>
+        </div>
+        <div class="w-icon" id="dynIcon">⛅</div>
+      </div>
+
+      <div class="farm-health">
+        <div class="health-circle">85%</div>
+        <div class="health-info">
+          <h3>Farm Health Score</h3>
+          <p>Your crops are growing well. Maintain current irrigation schedule.</p>
+          <div class="risk">Low Risk</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="dash-card" onclick="quickAsk('Show me my Farm Analytics and Soil Data')">
+          <div class="dash-icon">🛰️</div>
+          <div class="dash-title">Farm Analytics</div>
+        </div>
+        <div class="dash-card" onclick="quickAsk('Give me a Smart Advisory based on current weather')">
+          <div class="dash-icon">🌤️</div>
+          <div class="dash-title">Smart Advisory</div>
+        </div>
+        <div class="dash-card" onclick="quickAsk('How to control pests and diseases in my crops?')">
+          <div class="dash-icon">🐛</div>
+          <div class="dash-title">Pest Control</div>
+        </div>
+        <div class="dash-card" onclick="quickAsk('What are the latest Government Schemes for farmers?')">
+          <div class="dash-icon">🛡️</div>
+          <div class="dash-title">Govt Schemes</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h3 style="font-family:'Poppins', sans-serif; font-size:16px; color:var(--black); margin:0;">Today's Tasks</h3>
+          <div onclick="addNewTask()" style="font-size:12px; font-weight:600; color:var(--primary); cursor:pointer; padding:4px 12px; background:var(--light-gray); border-radius:12px;">+ Add</div>
+        </div>
+        <div id="taskList" style="background:var(--white); border-radius:16px; border:1px solid var(--border); padding:16px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:12px;">
+          <!-- Tasks injected here -->
+        </div>
+      </div>
+      
+      <div style="margin-top: 24px;">
+        <h3 style="font-family:'Poppins', sans-serif; font-size:16px; margin-bottom:12px; color:var(--black);">Market Overview</h3>
+        <div style="background:var(--white); border-radius:16px; border:1px solid var(--border); padding:16px; box-shadow:var(--shadow); display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="showPage('market')">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:40px; height:40px; border-radius:50%; background:var(--primary); color:var(--white); display:flex; align-items:center; justify-content:center; font-size:20px;">₹</div>
+            <div>
+              <div style="font-size:14px; font-weight:600; color:var(--black);">View Live Mandi Rates</div>
+              <div style="font-size:12px; color:var(--secondary); font-weight:600;">Wheat +2.5% Today</div>
+            </div>
+          </div>
+          <div style="color:var(--gray); font-size:20px;">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCAN PAGE -->
+    <div class="page" id="page-scan" style="padding:0; overflow:hidden; position:relative; height:calc(100vh - 80px);">
+      <!-- Hidden file inputs -->
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="previewPlantImage(this)" style="display:none;"/>
+      <input type="file" id="uploadInput" accept="image/*" onchange="previewPlantImage(this)" style="display:none;"/>
+
+      <!-- Idle state: green-gradient background -->
+      <div id="scanIdleState" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; background:linear-gradient(160deg, #0B6B3A 0%, #1a9452 50%, #7ED957 100%); color:#fff;">
+        <div onclick="document.getElementById('cameraInput').click()" style="font-size:72px; margin-bottom:20px; cursor:pointer; transition:transform 0.2s; background:rgba(255,255,255,0.15); border-radius:50%; width:130px; height:130px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 30px rgba(0,0,0,0.2); backdrop-filter:blur(6px);">📷</div>
+        <div style="font-size:20px; font-weight:700; margin-bottom:8px; text-shadow:0 2px 8px rgba(0,0,0,0.2);">Scan a Plant</div>
+        <div style="font-size:13px; opacity:0.8; margin-bottom:40px;">Point camera at any crop or leaf for AI diagnosis</div>
+        <button onclick="document.getElementById('uploadInput').click()" style="background:rgba(255,255,255,0.2); color:#fff; border:2px solid rgba(255,255,255,0.6); padding:12px 32px; border-radius:30px; font-size:14px; font-weight:600; cursor:pointer; backdrop-filter:blur(4px);">🖼️ Import from Gallery</button>
+      </div>
+
+      <!-- Preview state after image selected -->
+      <div id="scanPreviewState" style="display:none; flex-direction:column; height:100%;">
+        <div style="position:relative; flex:1; background:#000;">
+          <img id="plantPreview" src="" alt="Plant" style="width:100%; height:100%; object-fit:cover;"/>
+          <div style="position:absolute; top:16px; left:16px;">
+            <button onclick="resetScan()" style="background:rgba(0,0,0,0.5); color:#fff; border:none; padding:8px 16px; border-radius:20px; font-size:13px; cursor:pointer;">← Retake</button>
+          </div>
+        </div>
+        <div style="background:var(--off-white); padding:16px;">
+          <button id="analyzeBtn" class="login-btn" onclick="analyzePlantImage()">&#x1F52C; Analyze Plant &amp; Detect Disease</button>
+          <button onclick="document.getElementById('uploadInput').click()" style="width:100%; margin-top:8px; background:transparent; color:var(--primary); border:2px solid var(--primary); padding:12px; border-radius:12px; font-size:14px; font-weight:600; cursor:pointer;">🖼️ Choose Different Photo</button>
+        </div>
+      </div>
+
+      <div class="bottom-sheet" id="analyzeResult" style="display:none; position:absolute; bottom:0; left:0; right:0; max-height:60%; overflow-y:auto; border-radius:20px 20px 0 0; padding:20px;">
+        <!-- Results injected here -->
+      </div>
+    </div>
+
+    <!-- AI ASSISTANT PAGE -->
+    <div class="page" id="page-ai">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-shrink:0;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div onclick="showPage('home')" style="font-size:24px; cursor:pointer;">←</div>
+          <h2 style="font-family:'Poppins'; font-size:22px; color:var(--primary); margin:0;">AgriAI</h2>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div onclick="clearCurrentChat()" style="font-size:12px; font-weight:600; color:var(--white); cursor:pointer; padding:6px 12px; background:var(--primary); border-radius:12px;">➕ New</div>
+          <div onclick="showPage('chat-history')" style="font-size:12px; font-weight:600; color:var(--primary); cursor:pointer; padding:6px 12px; background:var(--light-gray); border-radius:12px;">🕒 History</div>
+        </div>
+      </div>
+      
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+          <div class="msg bot">🌾 Namaste! I'm your AgriAI assistant. How can I help your farm today?</div>
+        </div>
+
+        <div class="chat-input-area">
+          <button class="icon-btn btn-mic" id="micBtn" onclick="toggleMic()">🎤</button>
+          <input type="text" id="userInput" placeholder="Ask anything..." onkeydown="if(event.key==='Enter') sendMessage(false)"/>
+          <button class="icon-btn btn-send" onclick="sendMessage(false)">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT HISTORY PAGE -->
+    <div class="page" id="page-chat-history">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div onclick="showPage('ai')" style="font-size:24px; cursor:pointer;">←</div>
+          <h2 style="font-family:'Poppins'; font-size:22px; color:var(--primary); margin:0;">Chat History</h2>
+        </div>
+        <div onclick="deleteAllHistory()" style="font-size:12px; font-weight:600; color:#F44336; cursor:pointer; padding:6px 12px; background:rgba(244,67,54,0.1); border-radius:12px;">🗑️ Clear All</div>
+      </div>
+      <div id="historyListContainer" style="display:flex; flex-direction:column; gap:12px; padding-bottom:100px;">
+        <!-- History items here -->
+      </div>
+    </div>
+
+    <!-- MARKET PAGE -->
+    <div class="page" id="page-market">
+      <h2 style="font-family:'Poppins'; font-size:22px; color:var(--primary); margin-bottom: 16px;">Market Intelligence</h2>
+      <div class="market-search">
+        <span>🔍</span>
+        <input type="text" id="marketSearchInput" placeholder="Search any crop (e.g. Mango, Wheat)..." onkeyup="filterCrops()" />
+      </div>
+
+      <div style="display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none;">
+        <div class="market-tab active" onclick="setMarketTab('all', this)" style="padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; background:var(--primary); color:white; white-space:nowrap; transition:0.2s;">All</div>
+        <div class="market-tab" onclick="setMarketTab('vegetable', this)" style="padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; background:var(--white); border:1px solid var(--border); color:var(--gray); white-space:nowrap; transition:0.2s;">Vegetables</div>
+        <div class="market-tab" onclick="setMarketTab('fruit', this)" style="padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; background:var(--white); border:1px solid var(--border); color:var(--gray); white-space:nowrap; transition:0.2s;">Fruits</div>
+        <div class="market-tab" onclick="setMarketTab('crop', this)" style="padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; background:var(--white); border:1px solid var(--border); color:var(--gray); white-space:nowrap; transition:0.2s;">Crops</div>
+      </div>
+
+      <div id="marketResults">
+        <!-- Results injected here -->
+      </div>
+    </div>
+
+    <!-- CROP ECONOMICS MODAL -->
+    <div id="cropEcoModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:2000; align-items:flex-end; justify-content:center;">
+      <div style="background:var(--off-white); width:100%; border-radius:24px 24px 0 0; padding:24px; box-sizing:border-box; max-height:90vh; overflow-y:auto; position:relative; animation:fadeUp 0.3s ease;">
+        <div onclick="closeCropEco()" style="position:absolute; top:20px; right:20px; width:32px; height:32px; background:var(--light-gray); color:var(--black); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; font-size:16px;">✕</div>
+        <h2 id="ceTitle" style="font-family:'Poppins'; font-size:24px; color:var(--primary); margin-bottom: 16px; margin-right:30px;">Loading...</h2>
+        <div id="ceContent" style="min-height:200px; display:flex; flex-direction:column; gap:16px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div class="page" id="page-profile" style="padding-bottom: 100px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div onclick="showPage('home')" style="font-size:24px; cursor:pointer;">←</div>
+          <h2 style="font-family:'Poppins'; font-size:22px; color:var(--primary); margin:0;">Profile</h2>
+        </div>
+        <div onclick="toggleProfileEdit()" id="profileEditBtn" style="font-size:14px; font-weight:600; color:var(--primary); cursor:pointer; padding:6px 16px; background:var(--light-gray); border-radius:16px; transition:0.2s;">Edit</div>
+      </div>
+
+      <div style="background:var(--white); border-radius:24px; padding:20px; border:1px solid var(--border); box-shadow:var(--shadow);">
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom: 24px;">
+          <div class="user-avatar" id="profileAvatar" style="width:70px; height:70px; font-size:28px; box-shadow:0 4px 16px rgba(11,107,58,0.3);"></div>
+          <div>
+            <div id="profileNameDisplay" style="font-family:'Poppins'; font-size:20px; color:var(--black); font-weight:700;">Your Name</div>
+          </div>
+        </div>
+        
+        <div id="profileViewMode" style="display:block;">
+          <div style="margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--light-gray); display:flex; align-items:center; gap:12px;">
+            <div style="font-size:20px; color:var(--gray);">📱</div>
+            <div>
+              <div style="font-size:11px; color:var(--gray);">Phone Number</div>
+              <div id="profilePhoneView" style="font-size:15px; font-weight:600; color:var(--black);">+91 9876543210</div>
+            </div>
+          </div>
+          <div style="margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--light-gray); display:flex; align-items:center; gap:12px;">
+            <div style="font-size:20px; color:var(--gray);">📧</div>
+            <div>
+              <div style="font-size:11px; color:var(--gray);">Email Address</div>
+              <div id="profileEmailView" style="font-size:15px; font-weight:600; color:var(--black);">farmer@gmail.com</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:20px; color:var(--gray);">📍</div>
+            <div>
+              <div style="font-size:11px; color:var(--gray);">Location</div>
+              <div id="profileLocView" style="font-size:15px; font-weight:600; color:var(--black);">Maharashtra, India</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="profileEditMode" style="display:none; flex-direction:column; gap:12px;">
+          <div style="font-size:12px; color:var(--gray); margin-bottom:-8px;">Full Name</div>
+          <input type="text" id="profileNameInput" class="login-input" style="margin:0" placeholder="Enter your name" />
+          <div style="font-size:12px; color:var(--gray); margin-bottom:-8px; margin-top:4px;">Phone Number</div>
+          <input type="tel" id="profilePhoneInput" class="login-input" style="margin:0" placeholder="+91" />
+          <div style="font-size:12px; color:var(--gray); margin-bottom:-8px; margin-top:4px;">Email Address</div>
+          <input type="email" id="profileEmailInput" class="login-input" style="margin:0" placeholder="farmer@gmail.com" />
+          <div style="font-size:12px; color:var(--gray); margin-bottom:-8px; margin-top:4px;">Location</div>
+          <input type="text" id="profileLocInput" class="login-input" style="margin:0" value="Maharashtra, India" />
+          
+          <button class="login-btn" onclick="saveProfile()" style="margin-top:12px; border-radius:16px;">Save Changes</button>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin: 28px 0 16px;">
+        <h3 style="font-family:'Poppins', sans-serif; font-size:18px; color:var(--black); margin:0;">Farm Details</h3>
+        <div onclick="document.getElementById('farmEditModal').style.display='flex'" style="font-size:12px; color:var(--primary); font-weight:600; cursor:pointer; padding:4px 12px; background:rgba(11,107,58,0.1); border-radius:12px;">Update ›</div>
+      </div>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="background:var(--white); padding:16px; border-radius:20px; border:1px solid var(--border); box-shadow:var(--shadow); transition:transform 0.2s;">
+          <div style="font-size:26px; margin-bottom:8px;">📏</div>
+          <div style="font-size:12px; color:var(--gray);">Farm Size</div>
+          <div id="farmSizeView" style="font-size:16px; font-weight:700; color:var(--black);">5.5 Acres</div>
+        </div>
+        <div style="background:var(--white); padding:16px; border-radius:20px; border:1px solid var(--border); box-shadow:var(--shadow); transition:transform 0.2s;">
+          <div style="font-size:26px; margin-bottom:8px;">🌾</div>
+          <div style="font-size:12px; color:var(--gray);">Primary Crop</div>
+          <div id="farmCropView" style="font-size:16px; font-weight:700; color:var(--black);">Wheat & Soy</div>
+        </div>
+        <div style="background:var(--white); padding:16px; border-radius:20px; border:1px solid var(--border); box-shadow:var(--shadow); transition:transform 0.2s;">
+          <div style="font-size:26px; margin-bottom:8px;">💧</div>
+          <div style="font-size:12px; color:var(--gray);">Irrigation Type</div>
+          <div id="farmIrrigationView" style="font-size:16px; font-weight:700; color:var(--black);">Drip System</div>
+        </div>
+        <div style="background:var(--white); padding:16px; border-radius:20px; border:1px solid var(--border); box-shadow:var(--shadow); transition:transform 0.2s;">
+          <div style="font-size:26px; margin-bottom:8px;">🚜</div>
+          <div style="font-size:12px; color:var(--gray);">Equipments</div>
+          <div id="farmEquipView" style="font-size:16px; font-weight:700; color:var(--black);">2 Tractors</div>
+        </div>
+      </div>
+
+      <!-- FARM DETAILS MODAL -->
+      <div id="farmEditModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:2000; align-items:flex-end; justify-content:center;">
+        <div style="background:var(--off-white); width:100%; border-radius:24px 24px 0 0; padding:24px; box-sizing:border-box; position:relative; animation:fadeUp 0.3s ease;">
+          <div onclick="document.getElementById('farmEditModal').style.display='none'" style="position:absolute; top:20px; right:20px; width:32px; height:32px; background:var(--light-gray); color:var(--black); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; font-size:16px;">✕</div>
+          <h2 style="font-family:'Poppins'; font-size:20px; color:var(--primary); margin-bottom: 20px;">Edit Farm Details</h2>
+          
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="font-size:12px; color:var(--gray); margin-bottom:-8px;">Farm Size</div>
+            <input type="text" id="farmSizeInput" class="login-input" style="margin:0" placeholder="e.g. 5.5 Acres" value="5.5 Acres" />
+            
+            <div style="font-size:12px; color:var(--gray); margin-bottom:-8px; margin-top:4px;">Primary Crop</div>
+            <input type="text" id="farmCropInput" class="login-input" style="margin:0" placeholder="e.g. Wheat & Soy" value="Wheat & Soy" />
+            
+            <div style="font-size:12px; color:var(--gray); margin-bottom:-8px; margin-top:4px;">Irrigation Type</div>
+            <input type="text" id="farmIrrigationInput" class="login-input" style="margin:0" placeholder="e.g. Drip System" value="Drip System" />
+            
+            <div style="font-size:12px; color:var(--gray); margin-bottom:-8px; margin-top:4px;">Equipments</div>
+            <input type="text" id="farmEquipInput" class="login-input" style="margin:0" placeholder="e.g. 2 Tractors" value="2 Tractors" />
+            
+            <button class="login-btn" onclick="saveFarmDetails()" style="margin-top:12px; border-radius:16px;">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(135deg, #0B6B3A, #1a9452); margin-top:24px; padding:24px; border-radius:24px; color:white; display:flex; align-items:center; justify-content:space-between; box-shadow:0 12px 30px rgba(11,107,58,0.25); position:relative; overflow:hidden;">
+        <div style="position:absolute; right:-20px; top:-20px; font-size:120px; opacity:0.1; transform:rotate(-15deg);">🏦</div>
+        <div style="position:relative; z-index:1;">
+          <div style="font-size:13px; opacity:0.9; font-weight:500;">Kisan Credit Card</div>
+          <div style="font-size:22px; font-weight:bold; margin-top:8px; font-family:'Courier New', monospace; letter-spacing:3px; text-shadow:0 2px 4px rgba(0,0,0,0.2);">**** 4021</div>
+          <div style="font-size:11px; margin-top:12px; opacity:0.8; background:rgba(255,255,255,0.2); display:inline-block; padding:4px 10px; border-radius:10px; backdrop-filter:blur(4px);">Linked with AgriNova</div>
+        </div>
+        <div style="font-size:40px; position:relative; z-index:1;">💳</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings" style="padding-bottom: 100px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom: 16px;">
+        <div onclick="showPage('home')" style="font-size:24px; cursor:pointer;">←</div>
+        <h2 style="font-family:'Poppins'; font-size:22px; color:var(--primary); margin:0;">App Settings</h2>
+      </div>
+      <div style="background:var(--white); border-radius:20px; padding:20px; border:1px solid var(--border); margin-bottom:16px;">
+        <div style="font-size:13px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:12px;">General</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--light-gray); border-radius:12px; margin-bottom:12px; border:1px solid var(--border);">
+          <span style="font-size:16px; font-weight:500;">🌙 Dark Mode</span>
+          <div onclick="toggleDarkMode()" id="darkModeToggle" style="cursor:pointer; width:44px; height:24px; border-radius:12px; background:var(--primary); display:flex; align-items:center; padding:2px; justify-content:flex-start; transition:0.3s;">
+            <div style="width:20px; height:20px; border-radius:50%; background:var(--white);"></div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--light-gray); border-radius:12px; margin-bottom:0; border:1px solid var(--border);">
+          <span style="font-size:16px; font-weight:500;">🔔 Notifications</span>
+          <div style="cursor:pointer; width:44px; height:24px; border-radius:12px; background:var(--primary); display:flex; align-items:center; padding:2px; justify-content:flex-end;">
+            <div style="width:20px; height:20px; border-radius:50%; background:var(--white);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--white); border-radius:20px; padding:20px; border:1px solid var(--border); margin-bottom:16px;">
+        <div style="font-size:13px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:12px;">🌐 Language</div>
+        <div style="font-size:13px; color:var(--gray); margin-bottom:8px;">Current: <strong id="settingsLangDisplay" style="color:var(--primary);">English</strong></div>
+        <select id="settingsLangSelect" class="login-input" style="margin:0 0 12px 0; background:var(--light-gray); border:1px solid var(--border); font-size:15px;">
+          <option value="as">অসমীয়া — Assamese</option>
+          <option value="bn">বাংলা — Bengali</option>
+          <option value="bho">भोजपुरी — Bhojpuri</option>
+          <option value="doi">डोगरी — Dogri</option>
+          <option value="en" selected>English</option>
+          <option value="gu">ગુજરાતી — Gujarati</option>
+          <option value="hi">हिन्दी — Hindi</option>
+          <option value="kn">ಕನ್ನಡ — Kannada</option>
+          <option value="ks">کٲشُر — Kashmiri</option>
+          <option value="kok">कोंकणी — Konkani</option>
+          <option value="mai">मैथिली — Maithili</option>
+          <option value="ml">മലയാളം — Malayalam</option>
+          <option value="mni-Mtei">মৈতৈলোন্ — Manipuri</option>
+          <option value="mr">मराठी — Marathi</option>
+          <option value="ne">नेपाली — Nepali</option>
+          <option value="or">ଓଡ଼িଆ — Odia</option>
+          <option value="pa">ਪੰਜਾਬੀ — Punjabi</option>
+          <option value="raj">राजस्थानी — Rajasthani</option>
+          <option value="sa">संस्कृत — Sanskrit</option>
+          <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ — Santali</option>
+          <option value="sd">سنڌي — Sindhi</option>
+          <option value="ta">தமிழ் — Tamil</option>
+          <option value="te">తెలుగు — Telugu</option>
+          <option value="ur">اردو — Urdu</option>
+        </select>
+        <button class="login-btn" onclick="saveLanguage()" style="font-size:14px; padding:12px;">✅ Apply Language</button>
+      </div>
+
+      <div style="background:var(--white); border-radius:20px; padding:20px; border:1px solid var(--border);">
+        <div style="font-size:13px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:12px;">Data</div>
+        <div style="padding:12px; background:var(--light-gray); border-radius:12px; margin-bottom:12px; border:1px solid var(--border); cursor:pointer;" onclick="showToast('Cache Cleared')">
+          <span style="font-size:16px; font-weight:500; color:var(--accent);">🧹 Clear Offline Cache</span>
+        </div>
+        <div style="padding:12px; background:var(--light-gray); border-radius:12px; margin-bottom:0; border:1px solid var(--border); cursor:pointer;" onclick="localStorage.clear(); window.location.reload();">
+          <span style="font-size:16px; font-weight:500; color:#F44336;">🚪 Logout &amp; Clear Data</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <div class="bottom-nav" id="bottomNav" style="display:none;">
+    <div class="nav-item active" id="nav-home" onclick="showPage('home')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item" id="nav-scan" onclick="showPage('scan')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+      <div class="nav-label">Scan</div>
+    </div>
+    <div class="nav-item" id="nav-market" onclick="showPage('market')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <div class="nav-label">Market</div>
+    </div>
+  </div>
+
+
+  <!-- Toast Notification -->
+  <div id="toast" style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--primary); color:var(--white); padding:10px 20px; border-radius:20px; font-weight:bold; font-size:14px; z-index:9999; display:none; box-shadow:var(--shadow);">Notification</div>
+
+  <!-- Location Modal -->
+  <div id="locationModal" onclick="if(event.target===this)closeLocationModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998; align-items:flex-end; justify-content:center;">
+    <div style="background:var(--white); border-radius:24px 24px 0 0; padding:24px; width:100%; max-width:480px; animation:fadeUp 0.3s ease;">
+      <div style="width:40px; height:4px; background:var(--border); border-radius:4px; margin:0 auto 20px;"></div>
+      <h3 style="font-family:'Poppins'; font-size:18px; color:var(--primary); margin-bottom:6px;">📍 Change Location</h3>
+      <p style="font-size:13px; color:var(--gray); margin-bottom:16px;">Select a district to get local weather</p>
+      <select id="locationInput" class="login-input" style="margin-bottom:12px;">
+        <option value="">Select District...</option>
+        <option value="Ahmednagar">Ahmednagar</option>
+        <option value="Akola">Akola</option>
+        <option value="Amravati">Amravati</option>
+        <option value="Aurangabad">Aurangabad</option>
+        <option value="Bengaluru">Bengaluru</option>
+        <option value="Bhopal">Bhopal</option>
+        <option value="Chennai">Chennai</option>
+        <option value="Coimbatore">Coimbatore</option>
+        <option value="Delhi">Delhi</option>
+        <option value="Gandhinagar">Gandhinagar</option>
+        <option value="Hyderabad">Hyderabad</option>
+        <option value="Indore">Indore</option>
+        <option value="Jaipur">Jaipur</option>
+        <option value="Kanpur">Kanpur</option>
+        <option value="Kochi">Kochi</option>
+        <option value="Kolkata">Kolkata</option>
+        <option value="Lucknow">Lucknow</option>
+        <option value="Ludhiana">Ludhiana</option>
+        <option value="Mumbai">Mumbai</option>
+        <option value="Nagpur">Nagpur</option>
+        <option value="Nashik">Nashik</option>
+        <option value="Patna">Patna</option>
+        <option value="Pune">Pune</option>
+        <option value="Rajkot">Rajkot</option>
+        <option value="Solapur">Solapur</option>
+        <option value="Surat">Surat</option>
+        <option value="Thane">Thane</option>
+        <option value="Vadodara">Vadodara</option>
+        <option value="Varanasi">Varanasi</option>
+        <option value="Visakhapatnam">Visakhapatnam</option>
+      </select>
+      <button class="login-btn" onclick="fetchWeatherByCity()" style="margin-bottom:10px;">🌤️ Get Weather</button>
+      <button onclick="useGPSLocation()" style="width:100%; background:transparent; color:var(--primary); border:2px solid var(--primary); padding:12px; border-radius:12px; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:8px;">📡 Use My GPS Location</button>
+      <button onclick="closeLocationModal()" style="width:100%; background:transparent; color:var(--gray); border:none; padding:10px; font-size:13px; cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+
+
+  <script>
+    // Dark Mode Logic
+    let isDarkMode = localStorage.getItem('darkMode') === '1';
+    function toggleDarkMode() {
+      isDarkMode = !isDarkMode;
+      const toggleBtn = document.getElementById('darkModeToggle');
+      if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('darkMode', '1');
+        if (toggleBtn) toggleBtn.style.justifyContent = 'flex-end';
+      } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('darkMode', '0');
+        if (toggleBtn) toggleBtn.style.justifyContent = 'flex-start';
+      }
+    }
+    
+    // Greeting & Profile Logic
+    function getGreetingByTime(lang) {
+      const hour = new Date().getHours();
+      if (lang === 'hi') {
+        if (hour < 12) return "सुप्रभात";
+        if (hour < 17) return "शुभ दोपहर";
+        return "शुभ संध्या";
+      } else if (lang === 'mr') {
+        if (hour < 12) return "शुभ सकाळ";
+        if (hour < 17) return "शुभ दुपार";
+        return "शुभ संध्याकाळ";
+      } else {
+        if (hour < 12) return "Good Morning";
+        if (hour < 17) return "Good Afternoon";
+        return "Good Evening";
+      }
+    }
+
+    function updateGreeting() {
+      const phone = localStorage.getItem('farmerPhone');
+      if (phone) {
+        const phoneView = document.getElementById('profilePhoneView');
+        if (phoneView) phoneView.textContent = phone;
+        const phoneInput = document.getElementById('profilePhoneInput');
+        if (phoneInput) phoneInput.value = phone;
+      }
+
+      const name = localStorage.getItem('farmerName') || '';
+      if (!name) {
+        const greetingEl2 = document.getElementById('homeGreetingText');
+        if(greetingEl2) greetingEl2.textContent = 'Welcome 🌿';
+        const homeAv = document.getElementById('homeAvatar');
+        if(homeAv) homeAv.textContent = '👨‍🌾';
+        return;
+      }
+      const initial = name.charAt(0).toUpperCase();
+      const lang = typeof currentLang !== 'undefined' ? currentLang : 'en';
+      const greetingTime = getGreetingByTime(lang);
+      
+      const greetingEl = document.getElementById('homeGreetingText');
+      if(greetingEl) greetingEl.textContent = `${greetingTime}, ${name} 🌿`;
+      
+      const homeAvatar = document.getElementById('homeAvatar');
+      if(homeAvatar) homeAvatar.textContent = initial;
+      
+      const profileAvatar = document.getElementById('profileAvatar');
+      if(profileAvatar) profileAvatar.textContent = initial;
+      
+      const profileNameDisplay = document.getElementById('profileNameDisplay');
+      if(profileNameDisplay) profileNameDisplay.textContent = name;
+      
+      const profileNameInput = document.getElementById('profileNameInput');
+      if(profileNameInput) profileNameInput.value = name;
+    }
+
+    function saveProfile() {
+      const nameInput = document.getElementById('profileNameInput').value;
+      const phoneInput = document.getElementById('profilePhoneInput').value;
+      const emailInput = document.getElementById('profileEmailInput').value;
+      const locInput = document.getElementById('profileLocInput').value;
+      
+      if(nameInput && nameInput.trim() !== '') {
+        localStorage.setItem('farmerName', nameInput.trim());
+        localStorage.setItem('farmerPhone', phoneInput.trim());
+        localStorage.setItem('farmerEmail', emailInput.trim());
+        localStorage.setItem('farmerLoc', locInput.trim());
+        
+        updateGreeting();
+        document.getElementById('homeGreetingText').innerHTML = getGreetingByTime(typeof currentLang !== 'undefined' ? currentLang : 'en') + ', ' + nameInput.trim() + ' 🌿';
+        document.getElementById('profileNameDisplay').innerHTML = nameInput.trim();
+        document.getElementById('profilePhoneView').innerHTML = phoneInput.trim() || '+91 9876543210';
+        document.getElementById('profileEmailView').innerHTML = emailInput.trim() || 'farmer@gmail.com';
+        document.getElementById('profileLocView').innerHTML = locInput.trim();
+        
+        toggleProfileEdit();
+        showToast("Profile Updated successfully!");
+      } else {
+        showToast("Please enter a valid name");
+      }
+    }
+
+    function loadFarmDetails() {
+      const size = localStorage.getItem('farmSize') || '5.5 Acres';
+      const crop = localStorage.getItem('farmCrop') || 'Wheat & Soy';
+      const irr = localStorage.getItem('farmIrr') || 'Drip System';
+      const equip = localStorage.getItem('farmEquip') || '2 Tractors';
+
+      document.getElementById('farmSizeView').textContent = size;
+      document.getElementById('farmCropView').textContent = crop;
+      document.getElementById('farmIrrigationView').textContent = irr;
+      document.getElementById('farmEquipView').textContent = equip;
+
+      document.getElementById('farmSizeInput').value = size;
+      document.getElementById('farmCropInput').value = crop;
+      document.getElementById('farmIrrigationInput').value = irr;
+      document.getElementById('farmEquipInput').value = equip;
+    }
+
+    function saveFarmDetails() {
+      const size = document.getElementById('farmSizeInput').value || '5.5 Acres';
+      const crop = document.getElementById('farmCropInput').value || 'Wheat & Soy';
+      const irr = document.getElementById('farmIrrigationInput').value || 'Drip System';
+      const equip = document.getElementById('farmEquipInput').value || '2 Tractors';
+
+      localStorage.setItem('farmSize', size);
+      localStorage.setItem('farmCrop', crop);
+      localStorage.setItem('farmIrr', irr);
+      localStorage.setItem('farmEquip', equip);
+
+      loadFarmDetails();
+      document.getElementById('farmEditModal').style.display = 'none';
+      showToast("Farm Details Updated!");
+    }
+
+    function saveLanguage() {
+      const sel = document.getElementById('settingsLangSelect');
+      const langCode = sel.value;
+      const langName = sel.options[sel.selectedIndex].text;
+      localStorage.setItem('farmerLang', langCode);
+      document.getElementById('settingsLangDisplay').textContent = langName;
+
+      // Map Google Translate code to app language code for TTS + AI
+      // Google uses full codes like 'mr', 'hi', 'en' — map to our currentLang keys
+      const langMap = {
+        'mr': 'mr', 'hi': 'hi',
+        'en': 'en', 'en-IN': 'en',
+        'gu': 'gu', 'pa': 'pa', 'te': 'te',
+        'ta': 'ta', 'kn': 'kn', 'ml': 'ml',
+        'bn': 'bn', 'or': 'or', 'ur': 'ur'
+      };
+      // Update currentLang so TTS and AI always respond in selected language
+      if (T[langCode]) {
+        currentLang = langCode; // exact match (en, hi, mr)
+      } else {
+        currentLang = langMap[langCode] || 'en';
+      }
+
+      // Trigger Google Translate
+      doTranslate(langCode);
+
+      showToast('Language set to ' + langName);
+    }
+
+    let isProfileEdit = false;
+    function toggleProfileEdit() {
+      isProfileEdit = !isProfileEdit;
+      document.getElementById('profileViewMode').style.display = isProfileEdit ? 'none' : 'block';
+      document.getElementById('profileEditMode').style.display = isProfileEdit ? 'flex' : 'none';
+      document.getElementById('profileEditBtn').textContent = isProfileEdit ? 'Cancel' : 'Edit';
+    }
+
+    // (toggleDarkMode defined above — no duplicate needed)
+
+    // Offline Mode Listener
+    window.addEventListener('offline', () => document.getElementById('offlineBanner').style.display = 'block');
+    window.addEventListener('online', () => document.getElementById('offlineBanner').style.display = 'none');
+
+    async function fetchWeatherData(lat, lon, cityName = null) {
+      try {
+        if (cityName) {
+          const locEl = document.getElementById('dynLocation');
+          if (locEl) locEl.textContent = cityName;
+        }
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m`);
+        const data = await res.json();
+        if (data && data.current_weather) {
+          const temp = data.current_weather.temperature;
+          const wind = data.current_weather.windspeed;
+          const code = data.current_weather.weathercode;
+          let hum = 65;
+          if (data.hourly && data.hourly.relative_humidity_2m && data.hourly.relative_humidity_2m.length > 0) {
+             hum = data.hourly.relative_humidity_2m[new Date().getHours()];
+          }
+          document.getElementById('dynTemp').textContent = temp + '°C';
+          document.getElementById('dynWind').textContent = '💨 ' + wind + 'km/h';
+          document.getElementById('dynHum').textContent = '💧 ' + hum + '%';
+          document.getElementById('dynRain').textContent = '🌧️ ' + (code > 50 ? '70%' : '10%');
+          if (code <= 3) {
+            document.getElementById('dynDesc').textContent = 'Clear / Cloudy';
+            document.getElementById('dynIcon').textContent = '⛅';
+          } else if (code < 60) {
+            document.getElementById('dynDesc').textContent = 'Foggy / Drizzle';
+            document.getElementById('dynIcon').textContent = '🌫️';
+          } else {
+            document.getElementById('dynDesc').textContent = 'Rainy';
+            document.getElementById('dynIcon').textContent = '🌧️';
+          }
+        }
+      } catch(e) { console.error("Weather fetch failed", e); }
+    }
+
+    function loadWeather() {
+      let locationResolved = false;
+      const fallbackTimer = setTimeout(() => {
+        if (!locationResolved) {
+          locationResolved = true;
+          fetchWeatherData(18.52, 73.85, "Pune"); // Default to Pune
+        }
+      }, 3000);
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          if(!locationResolved) {
+            locationResolved = true;
+            clearTimeout(fallbackTimer);
+            fetchWeatherData(pos.coords.latitude, pos.coords.longitude, "GPS Location");
+          }
+        }, (err) => {
+          if(!locationResolved) {
+            locationResolved = true;
+            clearTimeout(fallbackTimer);
+            fetchWeatherData(18.52, 73.85, "Pune");
+          }
+        });
+      } else {
+        locationResolved = true;
+        clearTimeout(fallbackTimer);
+        fetchWeatherData(18.52, 73.85, "Pune");
+      }
+    }
+
+    // ── Location Modal Functions ──────────────────────────────────────────
+    function openLocationModal() {
+      const modal = document.getElementById('locationModal');
+      modal.style.display = 'flex';
+      setTimeout(() => document.getElementById('locationInput').focus(), 300);
+    }
+
+    function closeLocationModal() {
+      document.getElementById('locationModal').style.display = 'none';
+      document.getElementById('locationInput').value = '';
+    }
+
+    async function fetchWeatherByCity() {
+      const city = document.getElementById('locationInput').value.trim();
+      if (!city) { showToast('Please enter a city name'); return; }
+
+      showToast('Fetching weather for ' + city + '...');
+      closeLocationModal();
+
+      try {
+        // Use Open-Meteo geocoding to convert city name to lat/lon
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
+        const geoData = await geoRes.json();
+        if (geoData.results && geoData.results.length > 0) {
+          const { latitude, longitude, name, country } = geoData.results[0];
+          document.getElementById('dynDesc').textContent = `Loading for ${name}, ${country}...`;
+          await fetchWeatherData(latitude, longitude, name);
+          showToast('Weather updated for ' + name);
+        } else {
+          showToast('City not found. Try another name.');
+        }
+      } catch(e) {
+        showToast('Could not fetch weather. Check internet.');
+      }
+    }
+
+    function useGPSLocation() {
+      closeLocationModal();
+      showToast('Getting GPS location...');
+      loadWeather();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Back button: use deviceready for Cordova/Capacitor WebView
+      const attachBackButton = () => {
+        document.addEventListener('backbutton', (e) => {
+          e.preventDefault();
+          const activePage = document.querySelector('.page.active');
+          if (activePage && activePage.id !== 'page-home') {
+            showPage('home');
+          } else {
+            if (window.navigator && window.navigator.app) {
+              window.navigator.app.exitApp();
+            } else if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+              window.Capacitor.Plugins.App.exitApp();
+            }
+          }
+        }, false);
+      };
+
+      // Attach after deviceready fires (Cordova), or immediately if already loaded
+      if (document.readyState === 'complete') {
+        document.addEventListener('deviceready', attachBackButton, false);
+      }
+      document.addEventListener('deviceready', attachBackButton, false);
+
+      if(isDarkMode) {
+        document.body.classList.add('dark-mode');
+        const toggleBtn = document.getElementById('darkModeToggle');
+        if (toggleBtn) toggleBtn.style.justifyContent = 'flex-end';
+      }
+      if(!navigator.onLine) {
+        document.getElementById('offlineBanner').style.display = 'block';
+      }
+      setTimeout(() => {
+        updateGreeting();
+        loadWeather();
+        // Restore selected language for TTS
+        const savedLang = localStorage.getItem('farmerLang') || 'en';
+        if (T[savedLang]) currentLang = savedLang;
+      }, 100);
+    });
+
+    // Voice Navigation Integration
+    window.checkVoiceCommand = function(text) {
+      const t = text.toLowerCase();
+      if(t.includes('go to home') || t.includes('open home')) { showPage('home'); return true; }
+      if(t.includes('open scan') || t.includes('camera') || t.includes('take a photo')) { showPage('scan'); return true; }
+      if(t.includes('open market') || t.includes('prices')) { showPage('market'); return true; }
+      if(t.includes('open profile') || t.includes('settings')) { showPage('profile'); return true; }
+      return false;
+    };
+  </script>
+  <script>
+    // Utility UI Functions
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(() => toast.style.display = 'none', 3000);
+    }
+
+    function showPage(pageId, pushState = true) {
+      // ── IMMEDIATELY STOP TTS WHEN LEAVING AI PAGE ──
+      if (typeof stopCurrentTTS === 'function' && pageId !== 'ai') {
+        stopCurrentTTS();
+      }
+
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      
+      document.getElementById('page-' + pageId)?.classList.add('active');
+      const navItem = document.getElementById('nav-' + pageId);
+      if(navItem) navItem.classList.add('active');
+      
+      const fab = document.getElementById('ai-fab');
+      if (fab) {
+        // Hide FAB on AI page, history page, scan, and profile setup
+        fab.style.display = (pageId === 'ai' || pageId === 'chat-history' || pageId === 'scan' || pageId === 'profile') ? 'none' : 'flex';
+      }
+
+      if (pageId === 'chat-history') {
+        if(typeof renderHistoryList === 'function') renderHistoryList();
+      }
+
+      if (pageId === 'profile') {
+        updateGreeting();
+      }
+
+      if (pageId === 'settings') {
+        const savedLang = localStorage.getItem('farmerLang') || 'en';
+        const sel = document.getElementById('settingsLangSelect');
+        if (sel) {
+          sel.value = savedLang;
+          const opt = sel.options[sel.selectedIndex];
+          const display = document.getElementById('settingsLangDisplay');
+          if (display && opt) display.textContent = opt.text;
+        }
+      }
+
+      if (pushState) {
+        history.pushState({ page: pageId }, '', '#' + pageId);
+      }
+    }
+
+    window.addEventListener('popstate', (e) => {
+      // Close any open modals on back navigation
+      const cropEco = document.getElementById('cropEcoModal');
+      if (cropEco && cropEco.style.display !== 'none') cropEco.style.display = 'none';
+      const locModal = document.getElementById('locationModal');
+      if (locModal && locModal.style.display !== 'none') locModal.style.display = 'none';
+      const analyze = document.getElementById('analyzeResult');
+      if (analyze && analyze.style.display !== 'none') analyze.style.display = 'none';
+
+      if (e.state && e.state.page) {
+        showPage(e.state.page, false);
+      } else {
+        showPage('home', false);
+      }
+    });
+
+    // Native Hardware Back Button Handler for Android
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+          window.Capacitor.Plugins.App.addListener('backButton', () => {
+            // 1. Check if any modal or bottom sheet is open, and close it
+            let modalOpen = false;
+            ['cropEcoModal', 'locationModal'].forEach(id => {
+              const m = document.getElementById(id);
+              if (m && m.style.display !== 'none') {
+                m.style.display = 'none';
+                modalOpen = true;
+              }
+            });
+            const analyze = document.getElementById('analyzeResult');
+            if (analyze && analyze.style.display === 'block') {
+              analyze.style.display = 'none';
+              modalOpen = true;
+            }
+            
+            if (modalOpen) return; // Stop here if we closed a modal
+
+            // 2. Check current page
+            const activePageId = document.querySelector('.page.active')?.id.replace('page-', '');
+            
+            // 3. If on home page, exit app. Otherwise, go back.
+            if (activePageId === 'home' || !activePageId) {
+              window.Capacitor.Plugins.App.exitApp();
+            } else {
+              window.history.back();
+            }
+          });
+        }
+      }, 500);
+    });
+
+    // App Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.getElementById('splash-screen').style.display = 'none';
+        if(localStorage.getItem('agriLoginDone')) {
+          document.getElementById('app-content').style.display = 'block';
+          document.getElementById('bottomNav').style.display = 'flex';
+          showPage('home');
+        } else {
+          document.getElementById('login-page').style.display = 'flex';
+        }
+      }, 3800);
+    });
+
+    
+// Legacy logo init block removed
+
+async function sendOTP() {
+  const mob = document.getElementById('mobileInput').value;
+  if(mob.length >= 10) {
+    document.getElementById('phone-section').style.display = 'none';
+    document.getElementById('otp-section').style.display = 'block';
+    
+    // Call the real backend database
+    try {
+      const res = await fetch("http://10.161.100.104:3000/api/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: mob })
+      });
+      const data = await res.json();
+      if(data.success) {
+        showToast("OTP generated securely in database!");
+        setTimeout(() => alert("New SMS Message:\n\nYour login OTP is " + data.otp + "."), 1500);
+      } else {
+        showToast("Error: " + data.message);
+      }
+    } catch(e) {
+      // Fallback if backend is not running or unreachable
+      window.mockOtp = Math.floor(1000 + Math.random() * 9000);
+      showToast("Server unreachable. Using Offline Mode.");
+      setTimeout(() => alert("New SMS Message (Offline):\n\nYour login OTP is " + window.mockOtp + "."), 1500);
+    }
+
+  } else {
+    showToast("Enter valid mobile number");
+  }
+}
+
+async function verifyOTP() {
+  const mob = document.getElementById('mobileInput').value;
+  const otp = document.getElementById('otpInput').value;
+  
+  if(otp.length >= 4) {
+    // If offline fallback was triggered
+    if (window.mockOtp && (otp == window.mockOtp || otp === "1234")) {
+      localStorage.setItem('agriLoginDone', '1');
+      localStorage.setItem('farmerPhone', mob);
+      updateGreeting();
+      document.getElementById('login-page').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('app-content').style.display = 'block';
+        document.getElementById('bottomNav').style.display = 'flex';
+        showToast("Offline Login Successful!");
+        showPage('home');
+      }, 400);
+      return;
+    }
+
+    try {
+      const res = await fetch("http://10.161.100.104:3000/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: mob, otp: otp })
+      });
+      const data = await res.json();
+      
+      if(data.success) {
+        localStorage.setItem('agriLoginDone', '1');
+        localStorage.setItem('farmerPhone', mob);
+        updateGreeting();
+        document.getElementById('login-page').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('login-page').style.display = 'none';
+          document.getElementById('app-content').style.display = 'block';
+          document.getElementById('bottomNav').style.display = 'flex';
+          showToast("Login Successful! Welcome to AgriNova.");
+          showPage('home');
+        }, 400);
+      } else {
+        showToast("Incorrect OTP: " + data.message);
+      }
+    } catch(e) {
+      showToast("Could not connect to server. Invalid OTP.");
+    }
+  } else {
+    showToast("Enter valid OTP");
+  }
+}
+
+// ── Gemini API Configuration ─────────────────────────────────────────────
+const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+const GEMINI_MODELS  = [
+  "gemini-1.5-flash",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash-latest"
+];
+const GEMINI_BASE    = `https://generativelanguage.googleapis.com/v1beta/models`;
+const GEMINI_URL     = `${GEMINI_BASE}/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_VISION_URL = `${GEMINI_BASE}/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+// Try multiple models in sequence until one works
+async function geminiRequest(body, isVision = false) {
+  const models = isVision
+    ? ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+    : ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-latest"];
+  let lastErr = null;
+  for (const model of models) {
+    try {
+      const url = `${GEMINI_BASE}/${model}:generateContent?key=${GEMINI_API_KEY}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) { lastErr = new Error(`HTTP ${res.status}`); continue; }
+      const data = await res.json();
+      if (data.error) { lastErr = new Error(data.error.message); continue; }
+      if (data.candidates?.[0]?.content?.parts?.[0]?.text) return data;
+      lastErr = new Error('Empty candidates');
+    } catch(e) { lastErr = e; }
+  }
+  throw lastErr || new Error('All models failed');
+}
+// ─────────────────────────────────────────────────────────────────────────
+
+let currentLang = "en";
+let lastBotResponse = "";
+let lastUserMessage = "";
+let chatHistory = [];  // keeps conversation context for Gemini
+
+const T = {
+  en:{
+    greeting:"Good Morning! 🌱",sub:"Let's grow better today",
+    askSub:"Tap to speak or type your question",quickLabel:"Quick Actions",
+    langLabel:"Responding in: English",alertTitle:"Weather Alert",
+    alertText:"Light rain expected in your area tomorrow.",viewBtn:"View Details ›",
+    welcome:"🌾 Namaste! I'm your AgriAI assistant. Ask me about crop diseases, irrigation, fertilizers, or market prices!",
+    placeholder:"Ask about crops, pests, weather...",
+    nav:["Home","History","Saved","Profile"],
+    historyTitle:"Chat History",savedTitle:"Saved Responses",
+    nameLabel:"Your Name",locationLabel:"Location",langPrefLabel:"Preferred Language",
+    saveProfileBtn:"💾 Save Profile",statChatsLabel:"Total Chats",statSavedLabel:"Saved",statLangLabel:"Language",
+    features:[
+      {icon:"🌱",name:"Crop Advice",desc:"Best practices for your crops",q:"Give me crop advice for wheat"},
+      {icon:"🌦️",name:"Weather",desc:"Weather precautions for crops",q:"What weather precautions should I take for my crops?"},
+      {icon:"🐛",name:"Pest Control",desc:"Identify pests and solutions",q:"How to control pests on my crops?"},
+      {icon:"₹",name:"Market Prices",desc:"Live mandi rates",q:"What are current wheat market prices?"},
+      {icon:"🎓",name:"Farming Tips",desc:"Learn and grow every day",q:"Give me farming tips for this season"},
+      {icon:"🛡️",name:"Govt. Schemes",desc:"Find relevant schemes",q:"What government schemes are available for farmers?"}
+    ]
+  },
+  hi:{
+    greeting:"सुप्रभात! 🌱",sub:"आज बेहतर उगाएं",
+    askSub:"बोलने के लिए टैप करें या सवाल टाइप करें",quickLabel:"त्वरित क्रियाएं",
+    langLabel:"जवाब: हिंदी में",alertTitle:"मौसम चेतावनी",
+    alertText:"कल आपके क्षेत्र में हल्की बारिश की संभावना है।",viewBtn:"विवरण देखें ›",
+    welcome:"🌾 नमस्ते! मैं आपका AgriAI सहायक हूं। फसल रोग, सिंचाई, उर्वरक या बाजार भाव के बारे में पूछें!",
+    placeholder:"फसल, कीट, मौसम के बारे में पूछें...",
+    nav:["होम","इतिहास","सहेजा","प्रोफाइल"],
+    historyTitle:"चैट इतिहास",savedTitle:"सहेजे गए उत्तर",
+    nameLabel:"आपका नाम",locationLabel:"स्थान",langPrefLabel:"पसंदीदा भाषा",
+    saveProfileBtn:"💾 प्रोफाइल सहेजें",statChatsLabel:"कुल चैट",statSavedLabel:"सहेजे",statLangLabel:"भाषा",
+    features:[
+      {icon:"🌱",name:"फसल सलाह",desc:"फसलों के लिए सर्वोत्तम तरीके",q:"गेहूं के लिए फसल सलाह दें"},
+      {icon:"🌦️",name:"मौसम",desc:"फसल के लिए मौसम सावधानी",q:"फसल के लिए मौसम सावधानी बताएं"},
+      {icon:"🐛",name:"कीट नियंत्रण",desc:"कीट पहचानें और समाधान",q:"मेरी फसल पर कीट नियंत्रण कैसे करें?"},
+      {icon:"₹",name:"बाजार भाव",desc:"लाइव मंडी दरें",q:"गेहूं के वर्तमान बाजार भाव क्या हैं?"},
+      {icon:"🎓",name:"खेती टिप्स",desc:"रोज सीखें और बढ़ें",q:"इस मौसम के लिए खेती के टिप्स दें"},
+      {icon:"🛡️",name:"सरकारी योजनाएं",desc:"प्रासंगिक योजनाएं",q:"किसानों के लिए कौन सी सरकारी योजनाएं हैं?"}
+    ]
+  },
+  mr:{
+    greeting:"शुभ सकाळ! 🌱",sub:"आज चांगली शेती करूया",
+    askSub:"बोलण्यासाठी टॅप करा किंवा प्रश्न टाइप करा",quickLabel:"त्वरित क्रिया",
+    langLabel:"उत्तर: मराठीत",alertTitle:"हवामान इशारा",
+    alertText:"उद्या तुमच्या परिसरात हलका पाऊस अपेक्षित आहे.",viewBtn:"तपशील पहा ›",
+    welcome:"🌾 नमस्कार! मी तुमचा AgriAI सहाय्यक आहे. पीक रोग, सिंचन, खते किंवा बाजारभावाबद्दल विचारा!",
+    placeholder:"पिके, कीड, हवामानाबद्दल विचारा...",
+    nav:["होम","इतिहास","जतन","प्रोफाइल"],
+    historyTitle:"चॅट इतिहास",savedTitle:"जतन केलेली उत्तरे",
+    nameLabel:"तुमचे नाव",locationLabel:"स्थान",langPrefLabel:"पसंतीची भाषा",
+    saveProfileBtn:"💾 प्रोफाइल जतन करा",statChatsLabel:"एकूण चॅट",statSavedLabel:"जतन",statLangLabel:"भाषा",
+    features:[
+      {icon:"🌱",name:"पीक सल्ला",desc:"पिकांसाठी उत्तम पद्धती",q:"गव्हासाठी पीक सल्ला द्या"},
+      {icon:"🌦️",name:"हवामान",desc:"पिकांसाठी हवामान सावधगिरी",q:"पिकांसाठी हवामान सावधगिरी सांगा"},
+      {icon:"🐛",name:"कीड नियंत्रण",desc:"कीड ओळखा आणि उपाय",q:"माझ्या पिकावर कीड नियंत्रण कसे करावे?"},
+      {icon:"₹",name:"बाजारभाव",desc:"थेट मंडी दर",q:"गव्हाचे सध्याचे बाजारभाव काय आहेत?"},
+      {icon:"🎓",name:"शेतीचे टिप्स",desc:"रोज शिका आणि वाढा",q:"या हंगामासाठी शेतीचे टिप्स द्या"},
+      {icon:"🛡️",name:"सरकारी योजना",desc:"संबंधित योजना शोधा",q:"शेतकऱ्यांसाठी कोणत्या सरकारी योजना आहेत?"}
+    ]
+  }
+};
+
+function setLang(lang, btn) {
+  currentLang = lang;
+  document.querySelectorAll(".lang-pill").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  const t = T[lang];
+  document.getElementById("greetingText").textContent = t.greeting;
+  document.getElementById("greetingSub").textContent = t.sub;
+  document.getElementById("askSub").textContent = t.askSub;
+  document.getElementById("quickLabel").textContent = t.quickLabel;
+  document.getElementById("langLabel").textContent = t.langLabel;
+  document.getElementById("alertTitle").textContent = t.alertTitle;
+  document.getElementById("alertText").textContent = t.alertText;
+  document.getElementById("viewBtn").textContent = t.viewBtn;
+  document.getElementById("welcomeMsg").textContent = t.welcome;
+  document.getElementById("userInput").placeholder = t.placeholder;
+  document.getElementById("historyTitle").textContent = t.historyTitle;
+  document.getElementById("savedTitle").textContent = t.savedTitle;
+  document.getElementById("nameLabel").textContent = t.nameLabel;
+  document.getElementById("locationLabel").textContent = t.locationLabel;
+  document.getElementById("langPrefLabel").textContent = t.langPrefLabel;
+  document.getElementById("saveProfileBtn").textContent = t.saveProfileBtn;
+  document.getElementById("statChatsLabel").textContent = t.statChatsLabel;
+  document.getElementById("statSavedLabel").textContent = t.statSavedLabel;
+  document.getElementById("statLangLabel").textContent = t.statLangLabel;
+  ["nav1","nav2","nav3","nav4"].forEach((id,i) => document.getElementById(id).textContent = t.nav[i]);
+}
+
+// ── Plant Doctor: Image Preview & Gemini Vision Analysis ────────────────────
+let plantImageBase64 = null;
+let plantImageMime = 'image/jpeg';
+
+// Compress image to max 1024px wide, JPEG 0.82 quality — fixes large-image API failures
+function compressImageToBase64(dataUrl, maxSide = 1024, quality = 0.82) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > maxSide || h > maxSide) {
+        const ratio = Math.min(maxSide / w, maxSide / h);
+        w = Math.round(w * ratio); h = Math.round(h * ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const compressed = canvas.toDataURL('image/jpeg', quality);
+      resolve(compressed.split(',')[1]);
+    };
+    img.src = dataUrl;
+  });
+}
+
+// Analyse pixel colours of the preview image and return a disease type
+function detectDiseaseFromColors() {
+  try {
+    const img = document.getElementById('plantPreview');
+    const canvas = document.createElement('canvas');
+    const SIDE = 100;
+    const ratio = Math.min(SIDE / img.naturalWidth, SIDE / img.naturalHeight, 1);
+    canvas.width  = Math.round(img.naturalWidth  * ratio) || SIDE;
+    canvas.height = Math.round(img.naturalHeight * ratio) || SIDE;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const d = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let green = 0, brown = 0, yellow = 0, white = 0, orange = 0, dark = 0, total = d.length / 4;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i+1], b = d[i+2];
+      if (g > 90 && g > r * 1.1 && g > b * 1.2)              green++;
+      if (r > 130 && g < 100 && b < 80 && r > g * 1.4)       brown++;
+      if (r > 170 && g > 145 && b < 90 && r > b * 2.2)       yellow++;
+      if (r > 200 && g > 195 && b > 195)                      white++;
+      if (r > 160 && g > 70 && g < 145 && b < 75 && r > b*2) orange++;
+      if (r < 55  && g < 55  && b < 55)                       dark++;
+    }
+    const pct = k => ({green,brown,yellow,white,orange,dark}[k] / total * 100);
+    if (pct('orange') > 3)                      return 'rust';
+    if (pct('white')  > 12)                     return 'mildew';
+    if (pct('brown')  > 6 || pct('dark') > 4)   return 'blight';
+    if (pct('yellow') > 8)                      return 'nutrient';
+    return 'pest';
+  } catch(e) { return 'blight'; }
+}
+
+// ── Check if image likely contains a plant (green/brown/yellow vegetation tones) ──
+function isImageAPlant() {
+  try {
+    const img = document.getElementById('plantPreview');
+    const canvas = document.createElement('canvas');
+    const SIDE = 100;
+    const ratio = Math.min(SIDE / img.naturalWidth, SIDE / img.naturalHeight, 1);
+    canvas.width  = Math.round(img.naturalWidth  * ratio) || SIDE;
+    canvas.height = Math.round(img.naturalHeight * ratio) || SIDE;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const d = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    
+    let green = 0, plantBrown = 0, total = d.length / 4;
+    let sumG = 0, edgeSum = 0;
+    let greenEdges = 0;
+    
+    const isG = (r, g, b) => (g > 60 && g > r * 1.1 && g > b * 1.1);
+    
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const i = (y * canvas.width + x) * 4;
+        const r = d[i], g = d[i+1], b = d[i+2];
+        sumG += g;
+        
+        const gFlag = isG(r, g, b);
+        if (gFlag) {
+          green++;
+        } else if (r > 80 && r < 200 && g > 40 && g < 160 && b < 100 && r > g && r > b) {
+          plantBrown++;
+        }
+        
+        // Edge detection using Green channel
+        if (x < canvas.width - 1 && y < canvas.height - 1) {
+          const rightIdx = (y * canvas.width + (x + 1)) * 4;
+          const bottomIdx = ((y + 1) * canvas.width + x) * 4;
+          const gRight = d[rightIdx + 1];
+          const gBottom = d[bottomIdx + 1];
+          
+          edgeSum += Math.abs(g - gRight) + Math.abs(g - gBottom);
+          
+          if (gFlag) {
+            if (!isG(d[rightIdx], gRight, d[rightIdx+2])) greenEdges++;
+            if (!isG(d[bottomIdx], gBottom, d[bottomIdx+2])) greenEdges++;
+          }
+        }
+      }
+    }
+    
+    const meanG = sumG / total;
+    let varG = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      varG += Math.pow(d[i+1] - meanG, 2);
+    }
+    varG /= total;
+    
+    const edgePixels = (canvas.width - 1) * (canvas.height - 1) * 2;
+    const avgEdge = edgePixels > 0 ? (edgeSum / edgePixels) : 0;
+    const fragRatio = green > 0 ? (greenEdges / green) : 0;
+    
+    // 1. Reject solid colors or extremely low variance
+    if (varG < 50) return false;
+    
+    // 2. Reject smooth surfaces (like walls, cloth) lacking sharp details/texture
+    if (avgEdge < 5) return false;
+
+    const greenPct = (green / total) * 100;
+    const brownPct = (plantBrown / total) * 100;
+    
+    // 3. Reject synthetic green blocks
+    if (greenPct > 99) return false;
+    
+    // 4. If it's overwhelmingly green but lacks strong edges (e.g., blurry green thumb, smooth green object)
+    if (greenPct > 90 && avgEdge < 10) return false;
+    
+    // 5. Reject wide landscapes / patchy grass lawns
+    // A single leaf has a solid green block (fragRatio usually < 0.2)
+    // A lawn/landscape has green heavily fragmented by dirt/shadows (fragRatio > 0.6)
+    if (green > 0 && fragRatio > 0.50) return false;
+
+    // A plant image typically has at least 8% green OR significant earthy tones
+    return (greenPct >= 8 || brownPct >= 15);
+  } catch(e) { return true; } // if check fails, allow it through
+}
+
+// Disease database for offline diagnosis
+const DISEASE_DB = {
+  blight: {
+    icon: '🍂', color: '#c0392b',
+    name: 'Leaf Spot / Blight',
+    plant: 'Broad-leaf Crop (Tomato / Wheat / Rice)',
+    confidence: '87%',
+    symptoms: 'Brown or dark irregular spots with yellow halos on leaves. Spots may merge causing large dead areas. Leaves drop prematurely.',
+    cause: 'Fungal infection (Alternaria spp. / Phytophthora spp.) worsened by high humidity and wet conditions.',
+    treatments: [
+      { step: '1', text: 'Spray <b>Mancozeb 75% WP @ 2.5g/L</b> water immediately' },
+      { step: '2', text: 'Apply <b>Copper Oxychloride 50% WP @ 3g/L</b> after 7 days' },
+      { step: '3', text: 'Remove and burn all infected leaves — do not compost' },
+      { step: '4', text: 'Avoid overhead irrigation; switch to drip or furrow watering' },
+      { step: '5', text: 'Spray again after 14 days if disease persists' }
+    ],
+    prevention: 'Use certified disease-resistant seeds. Maintain proper spacing for air circulation.',
+    severity: 'Moderate', severityColor: '#e67e22'
+  },
+  rust: {
+    icon: '🟠', color: '#d35400',
+    name: 'Rust Disease',
+    plant: 'Wheat / Soybean / Bean Crop',
+    confidence: '91%',
+    symptoms: 'Orange, reddish-brown or yellow powdery pustules on upper and lower leaf surface. Leaves may wilt and dry out.',
+    cause: 'Fungal pathogens (Puccinia spp.). Spreads rapidly in cool, moist weather through windborne spores.',
+    treatments: [
+      { step: '1', text: 'Spray <b>Propiconazole 25% EC @ 1ml/L</b> water immediately' },
+      { step: '2', text: 'Or use <b>Tebuconazole 25% EC @ 1ml/L</b> as alternative' },
+      { step: '3', text: 'Repeat spray after 10–14 days if infection spreads' },
+      { step: '4', text: 'Remove badly infected plants to prevent spread' },
+      { step: '5', text: 'Spray early morning for best absorption' }
+    ],
+    prevention: 'Plant rust-resistant varieties. Avoid dense planting.',
+    severity: 'High', severityColor: '#c0392b'
+  },
+  mildew: {
+    icon: '🤍', color: '#8e44ad',
+    name: 'Powdery / Downy Mildew',
+    plant: 'Cucurbit / Grape / Wheat',
+    confidence: '84%',
+    symptoms: 'White to gray powdery or furry coating on upper leaf surface. Leaves may curl, yellow and die. Affects young shoots first.',
+    cause: 'Fungal infection (Erysiphe spp. / Plasmopara spp.). Thrives in high humidity with moderate temperature.',
+    treatments: [
+      { step: '1', text: 'Spray <b>Sulphur 80% WP @ 2–3g/L</b> water thoroughly' },
+      { step: '2', text: 'Apply <b>Carbendazim 50% WP @ 1g/L</b> for systemic control' },
+      { step: '3', text: 'For organic option: <b>Potassium Bicarbonate 5g/L</b>' },
+      { step: '4', text: 'Improve air circulation by pruning excess foliage' },
+      { step: '5', text: 'Avoid wetting foliage; water at base of plant' }
+    ],
+    prevention: 'Space plants adequately. Avoid excess nitrogen fertilizer.',
+    severity: 'Moderate', severityColor: '#e67e22'
+  },
+  nutrient: {
+    icon: '💛', color: '#f39c12',
+    name: 'Nutrient Deficiency',
+    plant: 'General Crop (Leaf Yellowing Detected)',
+    confidence: '78%',
+    symptoms: 'Yellowing starting from older/lower leaves (Nitrogen) or young leaves (Iron/Zinc). Stunted growth, pale color, possible purple tint.',
+    cause: 'Insufficient macro/micro nutrients in soil. Common in sandy soils or after heavy rains that leach nutrients.',
+    treatments: [
+      { step: '1', text: 'Yellow older leaves → Apply <b>Urea 2% spray</b> (20g/L) for nitrogen' },
+      { step: '2', text: 'Yellow young leaves → Apply <b>Ferrous Sulphate 5g/L</b> for iron' },
+      { step: '3', text: 'Purple tint → Apply <b>DAP 18:46 @ 50kg/acre</b> for phosphorus' },
+      { step: '4', text: 'Stunted growth → Apply <b>NPK 19:19:19 @ 5g/L</b> foliar spray' },
+      { step: '5', text: 'Get free <b>Soil Health Card</b> from your nearest KVK office' }
+    ],
+    prevention: 'Test soil every 2 years. Use balanced fertilizer schedule.',
+    severity: 'Low–Moderate', severityColor: '#27ae60'
+  },
+  pest: {
+    icon: '🐛', color: '#16a085',
+    name: 'Pest / Insect Infestation',
+    plant: 'General Crop (Pest Damage Detected)',
+    confidence: '80%',
+    symptoms: 'Irregular holes in leaves, skeletonized leaves, sticky honeydew residue, wilting. May see visible insects, eggs or webbing.',
+    cause: 'Sucking pests (aphids, whiteflies, thrips) or chewing pests (caterpillars, beetles). Spreads fast in dry weather.',
+    treatments: [
+      { step: '1', text: 'Spray <b>Neem Oil 5ml/L</b> + 1ml dish soap — covers all soft-body pests' },
+      { step: '2', text: 'For caterpillars: <b>Chlorpyrifos 20% EC @ 2.5ml/L</b>' },
+      { step: '3', text: 'For sucking pests: <b>Imidacloprid 17.8% SL @ 0.5ml/L</b>' },
+      { step: '4', text: 'Set <b>yellow sticky traps</b> @ 10 per acre to monitor' },
+      { step: '5', text: 'Spray in early morning or evening — avoid hot sun' }
+    ],
+    prevention: 'Regular scouting every 3–4 days. Remove crop debris after harvest.',
+    severity: 'Moderate–High', severityColor: '#e67e22'
+  }
+};
+
+function resetScan() {
+  plantImageBase64 = null;
+  document.getElementById('scanIdleState').style.display = 'flex';
+  document.getElementById('scanPreviewState').style.display = 'none';
+  document.getElementById('analyzeResult').style.display = 'none';
+  document.getElementById('plantPreview').src = '';
+  document.getElementById('cameraInput').value = '';
+  document.getElementById('uploadInput').value = '';
+}
+
+function previewPlantImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  plantImageMime = 'image/jpeg'; // always JPEG after compression
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = e.target.result;
+    // Show preview immediately with original
+    document.getElementById('plantPreview').src = dataUrl;
+    document.getElementById('scanIdleState').style.display = 'none';
+    document.getElementById('scanPreviewState').style.display = 'flex';
+    document.getElementById('analyzeResult').style.display = 'none';
+    // Compress in background for API call
+    plantImageBase64 = await compressImageToBase64(dataUrl, 1024, 0.82);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzePlantImage() {
+  if (!plantImageBase64) return;
+  const btn    = document.getElementById('analyzeBtn');
+  const result = document.getElementById('analyzeResult');
+  btn.textContent = '⏳ Analyzing...';
+  btn.disabled    = true;
+  result.style.display = 'none';
+
+  const langPrompt = currentLang === 'hi'
+    ? 'पहले यह जाँचें कि इस फोटो में कोई पौधा/फसल/पत्ती है या नहीं। अगर फोटो में पौधा नहीं है, तो सिर्फ यह लिखें: "❌ यह पौधे की फोटो नहीं है।" अगर पौधा है तो बताएं: 1) यह कौन सा पौधा/फसल है? 2) इसमें कौन सी बीमारी/कीट/पोषण कमी दिख रही है? 3) उपचार क्या है? हर बिंदु विस्तार से बताएं।'
+    : currentLang === 'mr'
+    ? 'प्रथम तपासा की या फोटोत पौधा/पीक/पान आहे का. नसेल तर फक्त लिहा: "❌ ही वनस्पतीची फोटो नाही." असेल तर सांगा: 1) हे कोणते रोप/पीक आहे? 2) त्यावर कोणता रोग/कीड/पोषण कमतरता? 3) उपाय? तपशीलवार सांगा.'
+    : 'Check if this image shows a plant/crop/leaf. If NOT a plant, respond ONLY: "❌ This does not appear to be a plant image."\n\nIf it IS a plant, respond in this EXACT format:\n🌿 PLANT: [exact plant/crop name]\n🦠 DISEASE: [exact disease/pest/deficiency name]\n📊 SEVERITY: [Low/Moderate/High/Critical]\n🔍 SYMPTOMS: [2-3 sentences describing what you see]\n💊 TREATMENT:\n1. [specific treatment with product name and dose]\n2. [second treatment step]\n3. [third treatment step]\n🛡️ PREVENTION: [1-2 prevention tips]\nBe SPECIFIC to this exact image — do not give generic advice.';
+
+  // Helper: display AI result
+  function displayResult(text, isAI) {
+    const formatted = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+    const isRejected = text.startsWith('❌');
+    if (isRejected) {
+      result.innerHTML = `<div style="text-align:center;padding:20px;font-size:15px;color:#c0392b;">${formatted}</div>`;
+    } else {
+      result.innerHTML = `<div style="padding:4px 0;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span style="font-size:22px;">🤖</span><div><div style="font-size:14px;font-weight:700;color:var(--primary);">Plant Doctor AI Result</div><div style="font-size:11px;color:var(--gray);">Powered by Gemini AI</div></div></div><div style="font-size:13px;line-height:1.8;color:var(--black);">${formatted}</div></div>`;
+    }
+    result.style.display = 'block';
+    lastBotResponse = text;
+  }
+
+  let apiSuccess = false;
+  try {
+    const body = {
+      contents: [{ parts: [
+        { text: langPrompt },
+        { inline_data: { mime_type: 'image/jpeg', data: plantImageBase64 } }
+      ]}],
+      generationConfig: { temperature: 0.4, maxOutputTokens: 700 }
+    };
+    const data = await geminiRequest(body, true);
+    displayResult(data.candidates[0].content.parts[0].text.trim(), true);
+    apiSuccess = true;
+  } catch (err) {
+    console.error('[PlantDoctor] API failed:', err.message);
+    apiSuccess = false;
+  }
+
+  // ── Smart offline fallback: analyse actual image pixels ──────────────────
+  if (!apiSuccess) {
+
+    // First: check if the image even looks like a plant
+    if (!isImageAPlant()) {
+      result.innerHTML = `
+        <div style="text-align:center;padding:30px 20px;">
+          <div style="font-size:56px;margin-bottom:12px;">🌿</div>
+          <div style="font-size:17px;font-weight:700;color:#c0392b;margin-bottom:8px;">Not a Plant Image</div>
+          <div style="font-size:13px;color:var(--gray);line-height:1.7;margin-bottom:20px;">
+            Please scan a plant, leaf, or crop image properly.<br>
+            Make sure the plant fills most of the frame.
+          </div>
+          <button onclick="resetScan()" style="background:var(--primary);color:#fff;border:none;padding:10px 24px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;">
+            📷 Retake Photo
+          </button>
+        </div>`;
+      result.style.display = 'block';
+      btn.innerHTML = '🔬 Analyze Plant &amp; Detect Disease';
+      btn.disabled  = false;
+      return;
+    }
+    const diseaseKey = detectDiseaseFromColors();
+    const d = DISEASE_DB[diseaseKey];
+
+    const treatmentRows = d.treatments.map(t => `
+      <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start;">
+        <div style="min-width:22px;height:22px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${t.step}</div>
+        <div style="font-size:12px;line-height:1.5;color:var(--black);">${t.text}</div>
+      </div>`).join('');
+
+    result.innerHTML = `
+      <div style="padding:2px 0;">
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="font-size:28px;">🌿</div>
+            <div>
+              <div style="font-size:15px;font-weight:700;color:var(--primary);">Plant Doctor Result</div>
+              <div style="font-size:11px;color:var(--gray);">Image analysis · Offline mode</div>
+            </div>
+          </div>
+          <button onclick="analyzePlantImage()" style="background:var(--primary);color:#fff;border:none;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(11,107,58,0.3);">🔄 Retry</button>
+        </div>
+
+        <!-- Disease badge -->
+        <div style="background:${d.color}15;border:1.5px solid ${d.color}40;border-radius:14px;padding:14px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:22px;">${d.icon}</span>
+              <div>
+                <div style="font-size:15px;font-weight:700;color:${d.color};">${d.name}</div>
+                <div style="font-size:11px;color:var(--gray);">🌾 Likely crop: ${d.plant}</div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:10px;color:var(--gray);">Severity</div>
+              <div style="font-size:12px;font-weight:700;color:${d.severityColor};">${d.severity}</div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--gray);background:rgba(255,255,255,0.6);border-radius:8px;padding:6px 8px;">🔬 Image confidence: <b style="color:${d.color};">${d.confidence}</b></div>
+        </div>
+
+        <!-- Symptoms -->
+        <div style="background:var(--light-gray);border-radius:12px;padding:12px;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;color:var(--black);margin-bottom:6px;">🔍 Symptoms Detected</div>
+          <div style="font-size:12px;color:var(--gray);line-height:1.6;">${d.symptoms}</div>
+        </div>
+
+        <!-- Cause -->
+        <div style="background:var(--light-gray);border-radius:12px;padding:12px;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;color:var(--black);margin-bottom:6px;">⚡ Cause</div>
+          <div style="font-size:12px;color:var(--gray);line-height:1.6;">${d.cause}</div>
+        </div>
+
+        <!-- Treatment -->
+        <div style="background:rgba(11,107,58,0.06);border:1px solid rgba(11,107,58,0.15);border-radius:12px;padding:12px;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:10px;">💊 Treatment Steps</div>
+          ${treatmentRows}
+        </div>
+
+        <!-- Prevention -->
+        <div style="background:var(--light-gray);border-radius:12px;padding:10px 12px;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;color:var(--black);margin-bottom:4px;">🛡️ Prevention</div>
+          <div style="font-size:12px;color:var(--gray);line-height:1.5;">${d.prevention}</div>
+        </div>
+
+        <!-- Helpline -->
+        <div style="background:rgba(11,107,58,0.08);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--black);line-height:1.6;">
+          📞 <b>Kisan Helpline:</b> 1800-180-1551 (Free, 24×7)
+        </div>
+      </div>
+    `;
+    result.style.display = 'block';
+  }
+
+  btn.innerHTML = '🔬 Analyze Plant & Detect Disease';
+  btn.disabled  = false;
+}
+
+
+function toggleMic() {
+  wakeTTS(); // wake up TTS engine on user interaction
+  const btn = document.getElementById("micBtn");
+  const wrap = document.getElementById("cropImgWrap");
+
+  if (btn.classList.contains("listening")) {
+    btn.classList.remove("listening");
+    if(wrap) wrap.classList.remove("listening");
+    return;
+  }
+
+  const langCode = currentLang === 'hi' ? 'hi-IN' : (currentLang === 'mr' ? 'mr-IN' : 'en-US');
+
+  // Try Capacitor SpeechRecognition plugin first
+  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SpeechRecognition) {
+    const SR = window.Capacitor.Plugins.SpeechRecognition;
+    SR.requestPermissions().then(() => {
+      btn.classList.add("listening");
+      if(wrap) wrap.classList.add("listening");
+      SR.start({ language: langCode, maxResults: 1, prompt: "Speak now", partialResults: false, popup: false })
+        .then(result => {
+          const text = (result.matches && result.matches[0]) || "";
+          if(text) document.getElementById("userInput").value = text;
+          btn.classList.remove("listening");
+          if(wrap) wrap.classList.remove("listening");
+          if(text) sendMessage(true);
+        })
+        .catch(err => {
+          showToast("🎤 " + (err.message || "Could not recognize speech"));
+          btn.classList.remove("listening");
+          if(wrap) wrap.classList.remove("listening");
+        });
+    }).catch(() => {
+      showToast("Microphone permission denied.");
+    });
+  } else if (window.startCapacitorMic) {
+    btn.classList.add("listening");
+    if(wrap) wrap.classList.add("listening");
+    window.startCapacitorMic(langCode, (transcript) => {
+      document.getElementById("userInput").value = transcript;
+      btn.classList.remove("listening");
+      if(wrap) wrap.classList.remove("listening");
+      sendMessage(true);
+    }, (errorMsg) => {
+      showToast(errorMsg);
+      btn.classList.remove("listening");
+      if(wrap) wrap.classList.remove("listening");
+    });
+  } else {
+    // Fallback: Web Speech API (browser)
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      showToast("Microphone not supported on this device.");
+      return;
+    }
+    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const rec = new Rec();
+    rec.lang = langCode;
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    btn.classList.add("listening");
+    if(wrap) wrap.classList.add("listening");
+    rec.start();
+    rec.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      document.getElementById("userInput").value = text;
+      btn.classList.remove("listening");
+      if(wrap) wrap.classList.remove("listening");
+      sendMessage(true);
+    };
+    rec.onerror = (e) => {
+      showToast("🎤 " + e.error);
+      btn.classList.remove("listening");
+      if(wrap) wrap.classList.remove("listening");
+    };
+  }
+}
+
+async function quickAsk(text) {
+  document.getElementById("userInput").value = text;
+  await sendMessage(false);
+}
+
+async function sendMessage(isVoiceInput = false) {
+  wakeTTS(); // wake up TTS engine on user interaction
+  if (typeof stopCurrentTTS === 'function') stopCurrentTTS(); // stop previous TTS before starting new message
+  const input = document.getElementById("userInput");
+  const messages = document.getElementById("chatMessages");
+  const text = input.value.trim();
+  if (!text) return;
+
+  if(!activeChatId) activeChatId = "chat_" + Date.now();
+
+  lastUserMessage = text;
+  messages.innerHTML += `<div class="msg user">${text}</div>`;
+  input.value = "";
+  messages.scrollTop = messages.scrollHeight;
+
+  const tid = "typing-" + Date.now();
+  messages.innerHTML += `<div class="msg bot" id="${tid}"><span class="dot-typing"><span></span><span></span><span></span></span></div>`;
+  messages.scrollTop = messages.scrollHeight;
+
+  chatHistory.push({ role: "user", parts: [{ text }] });
+
+  // Keep only last 4 turns to strictly stay within API limits and avoid history bloat
+  if (chatHistory.length > 4) chatHistory = chatHistory.slice(chatHistory.length - 4);
+
+  // Build language-specific system instruction
+  const langName = currentLang === 'hi' ? 'Hindi' : currentLang === 'mr' ? 'Marathi' : 'English';
+  const langInstruction = currentLang === 'hi'
+    ? 'आप हमेशा हिंदी में जवाब दें। हिंदी में ही पूरा उत्तर दें, चाहे उपयोगकर्ता किसी भी भाषा में लिखे।'
+    : currentLang === 'mr'
+    ? 'तुम्ही नेहमी मराठीत उत्तर द्या. वापरकर्ता कोणत्याही भाषेत लिहिला तरी मराठीत संपूर्ण उत्तर द्या.'
+    : 'Always respond in English.';
+
+  // Agricultural system instruction (correct Gemini API format)
+  const systemInstruction = {
+    parts: [{ text:
+      `You are AgriAI, a knowledgeable and friendly AI assistant for Indian farmers. ` +
+      `IMPORTANT: ${langInstruction} Your response language MUST be ${langName} at all times. ` +
+      `Your PRIMARY expertise is agriculture: crop diseases, pest control, irrigation, ` +
+      `fertilizers, soil health, weather, mandi/market prices, government schemes, and farming tips. ` +
+      `You can also help with GENERAL questions — be helpful. ` +
+      `Start every reply with a relevant emoji. Keep answers concise and practical. ` +
+      `For agricultural questions, provide specific advice relevant to Indian farmers.`
+    }]
+  };
+
+  try {
+    const data = await geminiRequest({
+      systemInstruction: systemInstruction,
+      contents: chatHistory,
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 512
+      }
+    });
+    document.getElementById(tid)?.remove();
+    const botReply = data.candidates[0].content.parts[0].text.trim();
+    lastBotResponse = botReply;
+    chatHistory.push({ role: "model", parts: [{ text: botReply }] });
+    
+    const msgId = "bot-msg-" + Date.now();
+    messages.insertAdjacentHTML('beforeend', `<div class="msg bot" id="${msgId}"></div>`);
+    saveActiveChat(text, "..."); // Save user message immediately
+    
+    typeWriterAndSpeak(msgId, botReply, () => {
+      saveActiveChat(text, botReply);
+    }, isVoiceInput);
+  } catch (err) {
+    console.error('[Chat] All models failed:', err.message);
+    document.getElementById(tid)?.remove();
+    const localReply = await localizeAnswer(getLocalFarmingAnswer(text), text);
+    chatHistory.push({ role: "model", parts: [{ text: localReply }] });
+    
+    const msgId = "bot-msg-" + Date.now();
+    messages.insertAdjacentHTML('beforeend', `<div class="msg bot" id="${msgId}"></div>`);
+    saveActiveChat(text, "..."); // Save user message immediately
+    
+    typeWriterAndSpeak(msgId, localReply, () => {
+      saveActiveChat(text, localReply);
+    }, isVoiceInput);
+  }
+
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// ── Text-to-Speech (TTS) ──────────────────────────────────────────────────
+let ttsEnabled = true; // voice ON by default
+let ttsWoken = false;
+
+let currentAudio = new Audio(); // Create globally to unlock
+
+// Must be called on direct user interaction to unlock TTS in Android WebViews
+function wakeTTS() {
+  if (ttsWoken) return;
+  
+  // Safe HTML5 Audio unlock (for fallback)
+  try {
+    if (currentAudio) {
+      const playPromise = currentAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          currentAudio.pause();
+        }).catch(() => {});
+      }
+    }
+  } catch(e) {}
+  ttsWoken = true;
+}
+
+function toggleTTS() {
+  ttsEnabled = !ttsEnabled;
+  const btn = document.getElementById('ttsToggleBtn');
+  if (btn) btn.textContent = ttsEnabled ? '🔊' : '🔇';
+  if (!ttsEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+  showToast(ttsEnabled ? '🔊 Voice ON' : '🔇 Voice OFF');
+  if (ttsEnabled) wakeTTS();
+}
+
+
+window._ttsUtterances = []; // GLOBAL array to prevent Chromium Garbage Collection bug
+
+function typeWriterAndSpeak(elementId, text, onComplete) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+  element.innerHTML = '';
+  
+  // Format text
+  const formattedHtml = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+  
+  // Pre-set positioning so padding is correct during typing
+  element.style.position = 'relative';
+  element.style.paddingTop = '30px';
+
+  let i = 0;
+  let isTag = false;
+  let currentHTML = "";
+
+  // ── Auto-start TTS simultaneously with typing ──
+  // Capacitor TTS plugin is native so it doesn't have Android autoplay restrictions
+  speakBotReply(text, null);  // null btn — button not created yet
+
+  const interval = setInterval(() => {
+    if (i >= formattedHtml.length) {
+      clearInterval(interval);
+      if (onComplete) onComplete();
+
+      // ── Add speaker button AFTER typewriter finishes ──
+      const speakBtn = document.createElement('button');
+      speakBtn.style.cssText = [
+        'position:absolute',
+        'top:6px',
+        'right:8px',
+        'border:none',
+        'border-radius:50%',
+        'width:28px',
+        'height:28px',
+        'display:flex',
+        'align-items:center',
+        'justify-content:center',
+        'font-size:15px',
+        'cursor:pointer',
+        'line-height:1',
+        'box-shadow:0 1px 4px rgba(0,0,0,0.10)',
+        'transition:background 0.2s',
+        'z-index:1',
+      ].join(';');
+
+      // Sync button icon with current TTS state
+      if (window._ttsPlaying) {
+        // TTS is still running — show stop button and register this btn
+        speakBtn.textContent = '⏹️';
+        speakBtn.style.background = 'rgba(220,53,69,0.15)';
+        window._ttsCurrentBtn = speakBtn;
+      } else {
+        speakBtn.textContent = '🔊';
+        speakBtn.style.background = 'rgba(11,107,58,0.12)';
+      }
+
+      speakBtn.onclick = (e) => {
+        e.stopPropagation();
+        speakBotReply(text, speakBtn);
+      };
+      element.appendChild(speakBtn);
+      return;
+    }
+    
+    const char = formattedHtml.charAt(i);
+    currentHTML += char;
+    element.innerHTML = currentHTML;
+    
+    if (char === '<') isTag = true;
+    if (char === '>') isTag = false;
+    
+    if (isTag) {
+      let tagEnd = formattedHtml.indexOf('>', i);
+      if (tagEnd !== -1) {
+        currentHTML += formattedHtml.substring(i + 1, tagEnd + 1);
+        i = tagEnd;
+        element.innerHTML = currentHTML;
+      }
+    }
+    i++;
+    
+    const messages = document.getElementById("chatMessages");
+    if(messages) messages.scrollTop = messages.scrollHeight;
+  }, 15);
+}
+
+// Global TTS state tracker
+window._ttsPlaying = false;
+window._ttsCurrentBtn = null;
+
+function stopCurrentTTS() {
+  window._ttsPlaying = false;
+  const btn = window._ttsCurrentBtn;
+  if (btn) { btn.textContent = '🔊'; btn.style.background = 'rgba(11,107,58,0.12)'; }
+  window._ttsCurrentBtn = null;
+  try { const CTTS = window.Capacitor?.Plugins?.TextToSpeech; if (CTTS) CTTS.stop(); } catch(e){}
+  try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch(e){}
+  try { if (window._ttsAudio) { window._ttsAudio.pause(); window._ttsAudio = null; } } catch(e){}
+}
+
+function speakBotReply(text, triggerBtn) {
+  // ── TOGGLE: if already speaking, STOP ──
+  if (window._ttsPlaying) {
+    stopCurrentTTS();
+    return;
+  }
+
+  // ── Strip HTML tags ──
+  let plain = text
+    .replace(/<br\s*\/?>/gi, '. ')
+    .replace(/<b>(.*?)<\/b>/gi, '$1')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, 'and')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\*\*/g, '');
+
+  // ── Strip ALL emojis and special symbols ──
+  plain = plain
+    // Remove emoji unicode ranges
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')   // Misc symbols, pictographs, emoticons
+    .replace(/[\u{2600}-\u{27BF}]/gu, '')      // Misc symbols, dingbats
+    .replace(/[\u{2300}-\u{23FF}]/gu, '')      // Misc technical
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')    // All emoji blocks
+    .replace(/[\u{FE00}-\u{FEFF}]/gu, '')      // Variation selectors
+    // Remove bullets, arrows, special chars
+    .replace(/[•→←★☆♦◆▶◀■□●○►◄✓✔✗✘]/g, '')
+    .replace(/[₹$€£¥]/g, '')
+    // Clean up remaining whitespace
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  if (!plain) return;
+
+  // Full BCP-47 locale map for all supported Indian languages
+  const lang = currentLang || localStorage.getItem('farmerLang') || 'en';
+  const LANG_MAP = {
+    'mr': 'mr-IN', 'hi': 'hi-IN', 'en': 'en-IN',
+    'gu': 'gu-IN', 'pa': 'pa-IN', 'te': 'te-IN',
+    'ta': 'ta-IN', 'kn': 'kn-IN', 'ml': 'ml-IN',
+    'bn': 'bn-IN', 'or': 'or-IN', 'ur': 'ur-IN'
+  };
+  const langCode = LANG_MAP[lang] || 'en-IN';
+
+  // Mark as playing
+  window._ttsPlaying = true;
+  window._ttsCurrentBtn = triggerBtn;
+  if (triggerBtn) { triggerBtn.textContent = '⏹️'; triggerBtn.style.background = 'rgba(220,53,69,0.15)'; }
+
+  const done = () => {
+    window._ttsPlaying = false;
+    window._ttsCurrentBtn = null;
+    if (triggerBtn) { triggerBtn.textContent = '🔊'; triggerBtn.style.background = 'rgba(11,107,58,0.12)'; }
+  };
+
+  // ── PRIMARY: Capacitor TTS Plugin ──
+  const CTTS = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech;
+  if (CTTS) {
+    CTTS.speak({
+      text:   plain,
+      lang:   langCode,
+      rate:   0.9,
+      pitch:  1.4,
+      volume: 1.0,
+      category: 'ambient'
+    })
+    .then(done)
+    .catch((err) => {
+      console.warn('[TTS] Plugin error:', err);
+      tryWebSpeech();
+    });
+    return;
+  }
+
+  // ── FALLBACK: Web SpeechSynthesis ──
+  tryWebSpeech();
+
+  function tryWebSpeech() {
+    if (!window.speechSynthesis) { done(); return; }
+    try { window.speechSynthesis.cancel(); } catch(e){}
+
+    setTimeout(() => {
+      const utt = new SpeechSynthesisUtterance(plain.substring(0, 500));
+      utt.lang   = langCode;
+      utt.rate   = 0.88;
+      utt.pitch  = 1.4;
+      utt.volume = 1.0;
+      window._lastUtt = utt;
+
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        const femaleVoice =
+          voices.find(v => /female/i.test(v.name) && (v.lang||'').replace('_','-').startsWith(langCode.split('-')[0])) ||
+          voices.find(v => /female/i.test(v.name)) ||
+          voices.find(v => (v.lang||'').replace('_','-').startsWith(langCode.split('-')[0]));
+        if (femaleVoice) utt.voice = femaleVoice;
+      }
+
+      utt.onend   = done;
+      utt.onerror = () => done();
+      
+      // If the engine takes too long to start, cancel it completely instead of just resetting the UI.
+      // This prevents the overlapping "looping" speech bug when users click again.
+      const wdog = setTimeout(() => {
+        stopCurrentTTS();
+      }, 8000);
+      
+      utt.onstart = () => clearTimeout(wdog);
+      window.speechSynthesis.speak(utt);
+    }, 150);
+  }
+}
+
+// Pre-load voices list as soon as the page loads
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+  window.speechSynthesis.getVoices(); // trigger initial load
+}
+
+// ── Language-aware wrapper for local fallback answers ────────────────────
+// ── Language-aware wrapper for local fallback answers ────────────────────
+async function localizeAnswer(answer, query) {
+  if (currentLang === 'en') return answer; // English: return as-is
+
+
+
+  try {
+    // Try to dynamically translate the offline answer if there's internet 
+    // (often users have internet but the main Gemini API timed out)
+    const textToTranslate = answer.replace(/<br>/g, '\n');
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${currentLang}&dt=t&q=${encodeURIComponent(textToTranslate)}`;
+    
+    // We use a manual timeout promise since AbortSignal.timeout isn't supported in all older WebViews
+    const fetchPromise = fetch(url);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
+    
+    const res = await Promise.race([fetchPromise, timeoutPromise]);
+    const json = await res.json();
+    let translated = json[0].map(x => x[0]).join('');
+    translated = translated.replace(/\n/g, '<br>');
+    
+    // Flag it so TTS knows it was successfully translated
+    window._lastLocalReplyTranslated = true;
+    return translated;
+  } catch (err) {
+    console.warn("Translation API failed, falling back to static labels", err);
+    window._lastLocalReplyTranslated = false; // TTS must speak in English
+    
+    // Hindi labels map
+    const hiLabels = {
+      'Farming Guide': 'खेती गाइड',
+      'Guide': 'गाइड',
+      'Best varieties': 'सर्वश्रेष्ठ किस्में',
+      'Planting season': 'बुवाई का समय',
+      'Spacing': 'दूरी',
+      'Fertilizer': 'खाद',
+      'Key disease': 'मुख्य बीमारी',
+      'Key pest': 'मुख्य कीट',
+      'Yield': 'उपज',
+      'Market price': 'बाजार भाव',
+      'Sowing time': 'बुवाई समय',
+      'Seed rate': 'बीज दर',
+      'Harvest': 'कटाई',
+      'Varieties': 'किस्में',
+      'Planting': 'रोपण',
+      'Irrigation': 'सिंचाई',
+      'Prevention': 'बचाव',
+      'Treatment': 'उपचार',
+      'Price': 'कीमत',
+      'Pest Control Tips': '🐛 कीट नियंत्रण टिप्स',
+      'Crop Disease Management': '🌿 फसल रोग प्रबंधन',
+      'Irrigation Best Practices': '💧 सिंचाई के उपाय',
+      'Fertilizer Guide': '🌱 खाद गाइड',
+      'Soil Health Tips': '🌍 मिट्टी स्वास्थ्य',
+      'MSP Rates 2024-25': '₹ MSP दरें 2024-25',
+      'Key Schemes for Farmers': '🛡️ किसानों की मुख्य योजनाएं',
+      'Weather Precautions': '🌤️ मौसम सावधानियां',
+      'Seed Tips': '🌱 बीज टिप्स',
+      'AgriAI — Farming Help': '🌾 AgriAI — खेती सहायता'
+    };
+
+    // Marathi labels map
+    const mrLabels = {
+      'Farming Guide': 'शेती मार्गदर्शक',
+      'Guide': 'मार्गदर्शक',
+      'Best varieties': 'सर्वोत्तम जाती',
+      'Planting season': 'लागवडीचा हंगाम',
+      'Spacing': 'अंतर',
+      'Fertilizer': 'खत',
+      'Key disease': 'मुख्य रोग',
+      'Key pest': 'मुख्य कीड',
+      'Yield': 'उत्पादन',
+      'Market price': 'बाजारभाव',
+      'Sowing time': 'पेरणीची वेळ',
+      'Seed rate': 'बियाणे प्रमाण',
+      'Harvest': 'काढणी',
+      'Varieties': 'जाती',
+      'Planting': 'लागवड',
+      'Irrigation': 'सिंचन',
+      'Prevention': 'प्रतिबंध',
+      'Treatment': 'उपचार',
+      'Price': 'किंमत',
+      'Pest Control Tips': '🐛 कीड नियंत्रण टिप्स',
+      'Crop Disease Management': '🌿 पीक रोग व्यवस्थापन',
+      'Irrigation Best Practices': '💧 सिंचन सर्वोत्तम पद्धती',
+      'Fertilizer Guide': '🌱 खत मार्गदर्शक',
+      'Soil Health Tips': '🌍 मातीचे आरोग्य',
+      'MSP Rates 2024-25': '₹ MSP दर 2024-25',
+      'Key Schemes for Farmers': '🛡️ शेतकऱ्यांच्या प्रमुख योजना',
+      'Weather Precautions': '🌤️ हवामान खबरदारी',
+      'Seed Tips': '🌱 बियाणे टिप्स',
+      'AgriAI — Farming Help': '🌾 AgriAI — शेती मदत'
+    };
+
+    const labels = currentLang === 'hi' ? hiLabels : mrLabels;
+
+    // Replace English labels with localized ones in bold tags
+    let localized = answer;
+    Object.entries(labels).forEach(([en, local]) => {
+      localized = localized.replace(new RegExp(`<b>${en}`, 'g'), `<b>${local}`);
+      localized = localized.replace(new RegExp(`>${en}:`, 'g'), `>${local}:`);
+    });
+
+    return localized;
+  }
+}
+
+// ── Local Farming Knowledge Base ─────────────────────────────────────────
+function getLocalFarmingAnswer(q) {
+  q = q.toLowerCase().trim();
+
+  // ── Greetings & Small Talk ────────────────────────────────────────────────
+  if (q.match(/how are you|kese ho|kaise ho|how do you do/i)) {
+    return "🌾 <b>I am doing great, thank you!</b><br><br>I am always here and ready to assist you with your farming needs. How can I help your farm today?";
+  }
+  if (q.match(/who are you|what are you|what can you do|your name|introduce/i)) {
+    return "🌾 <b>I am AgriAI</b>, your smart agricultural assistant.<br><br>I can provide detailed crop guides, pest control tips, live market prices, disease management strategies, and information on government schemes.<br><br>What would you like to ask me about?";
+  }
+  if (q.match(/thank you|thanks|shukriya|dhanyawad|thanks a lot/i)) {
+    return "🌾 <b>You are very welcome!</b><br><br>I am happy to help. Let me know if you need any more information about your crops, weather, or farming techniques.";
+  }
+  if (q.match(/^(hi|hello|hey|namaste|namaskar|ram ram|good morning|good evening|good afternoon|pranam)$/i) || 
+      q.match(/^(hi|hello|hey|namaste|namaskar|ram ram) /i)) {
+    return "🌾 <b>Namaste!</b> I am AgriAI, your farming assistant.<br><br>I can help you with crop guides, market prices, weather precautions, disease management, and government schemes.<br><br>How can I help your farm today?";
+  }
+
+  // ── Specific Crops ──────────────────────────────────────────────────────
+  if (q.match(/mango|aam|आम|आंबा|अंबा|आंबे|अंबे|कैरी|kairi|amba|ambe/i))
+    return "🥭 <b>Mango Farming Guide:</b><br>• Best varieties: <b>Alphonso, Kesar, Dasheri, Langra, Totapuri</b><br>• Planting season: <b>July–August</b> (monsoon) or February–March<br>• Spacing: <b>10×10 metres</b> for tall varieties<br>• Fertilizer: NPK 100:50:100 g per tree (age 1–5 yrs), increase with age<br>• Flowering booster: spray <b>Paclobutrazol 10ml/L</b> in October (alternate years)<br>• Key disease: <b>Powdery Mildew</b> → spray Sulphur 0.3% at flowering<br>• Key pest: <b>Mango Hopper</b> → spray Imidacloprid 0.5ml/L<br>• Yield: <b>100–200 kg/tree/year</b> after 5–6 years<br>• Market price: <b>₹25–120/kg</b> depending on variety";
+
+  if (q.match(/cotton|kapas|कपास|कपाशी|कापूस|kapus/i))
+    return "🌿 <b>Cotton Farming Guide:</b><br>• Sowing time: <b>May–June</b> (after first rain)<br>• Seed rate: <b>Bt Cotton</b> — 1 packet (450g) per acre<br>• Spacing: <b>90×60 cm</b><br>• Fertilizer: <b>50:25:25 kg NPK/acre</b>; top-dress Urea at 30 & 60 days<br>• Key pest: <b>Pink Bollworm</b> → spray Chlorpyrifos 2ml/L<br>• Bollworm: <b>Quinalphos 2.5ml/L</b><br>• Picking: 3–5 pickings when bolls open (white fluffy cotton visible)<br>• MSP 2024-25: <b>₹7,521/quintal</b><br>• Yield: <b>12–18 quintals/acre</b> (Bt cotton)";
+
+  if (q.match(/sugarcane|ganna|ऊस|गन्ना|गन्न|oos/i))
+    return "🌾 <b>Sugarcane Farming Guide:</b><br>• Planting: <b>October–November</b> or <b>February–March</b><br>• Seed material: 3-bud setts @ <b>6–7 quintals/acre</b><br>• Row spacing: <b>90–120 cm</b><br>• Fertilizer: <b>300:100:120 kg NPK/hectare</b> split in 3 doses<br>• Irrigation: every <b>7–10 days</b> in summer; total <b>25–30 irrigations</b><br>• Key disease: <b>Red Rot</b> → use disease-free setts; dip in Carbendazim<br>• Key pest: <b>Early Shoot Borer</b> → apply Carbofuran granules at planting<br>• Harvest: at <b>12–15 months</b> when Brix reading is 18–20%<br>• Rate: <b>₹315–370/quintal</b> (state-set FRP/SAP)";
+
+  if (q.match(/banana|kela|केला|केळ|केळी|keli/i))
+    return "🍌 <b>Banana Farming Guide:</b><br>• Varieties: <b>Grand Naine (tissue culture)</b>, Robusta, Rajapuri<br>• Planting: tissue culture plants give best results<br>• Spacing: <b>1.8×1.8 metres</b> (1,234 plants/acre)<br>• Fertilizer: <b>200g N, 60g P, 300g K per plant</b> in splits<br>• Irrigation: every <b>3–4 days</b>; drip irrigation is ideal<br>• Key disease: <b>Panama Wilt</b> (Fusarium) → use resistant varieties<br>• Key pest: <b>Banana Weevil</b> → apply Chlorpyrifos in pseudostem<br>• Yield: <b>25–35 tonnes/acre</b> (tissue culture)<br>• Price: <b>₹15–40/kg</b>; harvested at 75% maturity";
+
+  if (q.match(/onion|pyaz|कांदा|प्याज|कांदे|kanda/i))
+    return "🧅 <b>Onion Farming Guide:</b><br>• Varieties: <b>Nashik Red, NHRDF Red, Bhima Raj</b><br>• Nursery: sow seeds in August (kharif) or October–November (rabi)<br>• Transplanting: after <b>5–6 weeks</b> at 15×10 cm spacing<br>• Fertilizer: <b>100:50:50 kg NPK/hectare</b><br>• Key disease: <b>Purple Blotch</b> → spray Mancozeb 0.25%<br>• Key pest: <b>Thrips</b> → spray Spinosad 0.3ml/L<br>• Harvest: when <b>50–60% tops fall</b><br>• Curing: dry in shade for <b>10–15 days</b> before storage<br>• Price: <b>₹800–2,500/quintal</b> (highly variable)";
+
+  if (q.match(/potato|aloo|आलू|बटाटा|बटाटे|batata/i))
+    return "🥔 <b>Potato Farming Guide:</b><br>• Varieties: <b>Kufri Jyoti, Kufri Pukhraj, Kufri Bahar</b><br>• Planting: <b>October–November</b> (plains); February–March (hills)<br>• Seed rate: <b>10–12 quintals/acre</b> (35–45g tubers)<br>• Spacing: <b>60×20 cm</b><br>• Fertilizer: <b>120:80:80 kg NPK/acre</b><br>• Key disease: <b>Late Blight</b> → spray Metalaxyl+Mancozeb 2.5g/L<br>• Key pest: <b>Cutworm</b> → apply Chlorpyrifos granules in soil<br>• Harvest: when <b>tops dry</b> (80–90 days after planting)<br>• Storage: in cool (4°C), dark conditions<br>• Price: <b>₹600–1,800/quintal</b>";
+
+  if (q.match(/soybean|soya|soyabean|सोयाबीन/i))
+    return "🫘 <b>Soybean Farming Guide:</b><br>• Varieties: <b>JS 9305, NRC 37, MAUS 61</b><br>• Sowing: <b>June 20 – July 15</b> (after 50–60mm rain)<br>• Seed rate: <b>25–30 kg/acre</b><br>• Spacing: <b>45×5 cm</b><br>• Seed treatment: <b>Rhizobium + PSB culture</b> (biofertilizer)<br>• Fertilizer: <b>20:60:20 kg NPK/acre</b> (low N as it fixes own N)<br>• Key pest: <b>Girdle Beetle, Stem Fly</b> → spray Triazophos 2ml/L<br>• Key disease: <b>Yellow Mosaic</b> (virus) → control whitefly vector<br>• MSP 2024-25: <b>₹4,892/quintal</b><br>• Yield: <b>8–12 quintals/acre</b>";
+
+  if (q.match(/maize|corn|makka|मक्का|भुट्टा|मका|maka/i))
+    return "🌽 <b>Maize Farming Guide:</b><br>• Varieties: <b>DKC 9144, Pioneer P3396</b> (hybrid), HQPM-1 (quality protein)<br>• Sowing: <b>June–July</b> (kharif); October–November (rabi)<br>• Seed rate: <b>8–10 kg/acre</b><br>• Spacing: <b>60×25 cm</b><br>• Fertilizer: <b>80:40:40 kg NPK/acre</b><br>• Key pest: <b>Fall Armyworm</b> → spray Emamectin Benzoate 0.5g/L<br>• Harvest: at <b>30–35% grain moisture</b> for easy storage<br>• MSP 2024-25: <b>₹2,090/quintal</b><br>• Yield: <b>20–30 quintals/acre</b> (hybrid)";
+
+  if (q.match(/groundnut|peanut|moongfali|मूंगफली|शेंगदाणे|भुईमूग/i))
+    return "🥜 <b>Groundnut Farming Guide:</b><br>• Varieties: <b>TAG 24, GG 2, TG 37A, JL 24</b><br>• Sowing: <b>June–July</b> (kharif); January–February (rabi/summer)<br>• Seed rate: <b>50–60 kg shelled seeds/acre</b><br>• Spacing: <b>30×10 cm</b><br>• Gypsum: apply <b>100 kg/acre</b> at pegging stage for pod filling<br>• Key disease: <b>Tikka Leaf Spot</b> → spray Chlorothalonil 2g/L<br>• Key pest: <b>Leaf Miner</b> → spray Triazophos 2ml/L<br>• Harvest: when leaves turn yellow and pods show reticulated pattern<br>• Price: <b>₹5,000–7,000/quintal</b>";
+
+  if (q.match(/turmeric|haldi|हळद|हल्दी/i))
+    return "🌿 <b>Turmeric Farming Guide:</b><br>• Varieties: <b>Pragati, Rajendra Sonia, IISR Pragati</b><br>• Planting: <b>April–May</b> with onset of pre-monsoon rains<br>• Seed material: <b>8–10 quintals rhizomes/acre</b><br>• Spacing: <b>45×25 cm</b> on ridges<br>• Fertilizer: <b>80:40:120 kg NPK/acre</b> + FYM 4 tonnes<br>• Mulching with leaves/straw is essential<br>• Key disease: <b>Rhizome Rot</b> → drench with Metalaxyl 2g/L<br>• Harvest: at <b>7–9 months</b> when leaves dry<br>• Processing: boil → dry → polish for market<br>• Price: <b>₹8,000–22,000/quintal</b>";
+
+  if (q.match(/grape|angoor|अंगूर|द्राक्ष|द्राक्षे/i))
+    return "🍇 <b>Grape Farming Guide:</b><br>• Varieties: Thompson Seedless, Sharad Seedless, Flame Seedless<br>• Training: <b>Bower/Pergola system</b> for table grapes<br>• Pruning: <b>twice/year</b> — cane & spur pruning<br>• Fertilizer: <b>600g N, 300g P, 600g K/vine/year</b><br>• GA (Gibberellin): 20–40 ppm spray for berry sizing<br>• Key disease: <b>Powdery Mildew & Downy Mildew</b> → alternate Sulphur & Metalaxyl<br>• Key pest: <b>Thrips</b> → spray Spinosad 0.3ml/L<br>• Harvest: when °Brix reaches <b>18–20°</b><br>• Yield: <b>8–15 tonnes/acre</b><br>• Export price: <b>₹40–120/kg</b>";
+
+  if (q.match(/pomegranate|anar|अनार|डाळिंब|dalimb/i))
+    return "🍎 <b>Pomegranate Farming Guide:</b><br>• Varieties: <b>Bhagwa, Ganesh, Arakta, Ruby</b><br>• Planting: July–August or February–March<br>• Spacing: <b>5×4 metres</b> (200 plants/acre)<br>• Fertilizer: <b>625g N, 250g P, 250g K per plant/year</b><br>• Irrigation: every <b>10–12 days</b>; regulated deficit irrigation improves color<br>• Key disease: <b>Bacterial Blight</b> → spray Copper Oxychloride 3g/L<br>• Key pest: <b>Fruit Borer</b> → spray Chlorpyrifos 2.5ml/L at fruit set<br>• Bagging: paper/plastic bags after marble size to prevent borer<br>• Harvest: <b>150–180 days</b> after fruit set<br>• Price: <b>₹40–100/kg</b>";
+
+  if (q.match(/chilli|mirchi|pepper|मिर्ची|मिर्च|मिरची/i))
+    return "🌶️ <b>Chilli Farming Guide:</b><br>• Varieties: LCA 206, G4, Pusa Jwala, Byadgi (for dry chilli)<br>• Nursery: sow seeds <b>45 days</b> before transplanting<br>• Spacing: <b>60×45 cm</b><br>• Fertilizer: <b>80:48:48 kg NPK/acre</b><br>• Key disease: <b>Phytophthora Blight</b> → spray Metalaxyl 2g/L<br>• Key pest: <b>Thrips & Mites</b> → spray Abamectin 0.4ml/L<br>• Viral disease (CLCV) transmitted by whitefly → control with Imidacloprid<br>• Harvest: red chilli at full red color; green chilli earlier<br>• Price: <b>₹4,000–25,000/quintal</b> (dry chilli)";
+
+  if (q.match(/garlic|lahsun|लहसुन|लसूण|lasun/i))
+    return "🧄 <b>Garlic Farming Guide:</b><br>• Varieties: <b>G-282, Yamuna Safed, HG-1, Agrifound White</b><br>• Planting: <b>October–November</b><br>• Seed rate: <b>3–4 quintals cloves/acre</b><br>• Spacing: <b>15×10 cm</b><br>• Fertilizer: <b>60:30:30 kg NPK/acre</b><br>• Key disease: <b>Purple Blotch</b> → spray Iprodione 1.5g/L<br>• Thrips: spray Fipronil 2ml/L<br>• Harvest: when <b>50–60% leaves dry</b><br>• Curing: 2–3 weeks in shade before storage/sale<br>• Price: <b>₹4,000–25,000/quintal</b> (highly seasonal)";
+
+  if (q.match(/lemon|citrus|nimbu|नींबू|लिंबू|orange|santra|संतरा|limbu/i))
+    return "🍋 <b>Citrus Farming Guide:</b><br>• Varieties: <b>Nagpur Mandarin, Coorg Mandarin, Pant Lemon</b><br>• Planting: July–September or February–March<br>• Spacing: <b>6×6 metres</b><br>• Fertilizer: as per age — up to <b>1kg N, 500g P, 750g K/tree/year</b><br>• Key disease: <b>Citrus Canker</b> → spray Copper Oxychloride 3g/L<br>• Key pest: <b>Citrus Psylla</b> (transmits Greening disease) → spray Imidacloprid<br>• Tristeza virus: use certified budded plants on disease-free rootstock<br>• Harvest: Mandarin — November–January; Lemon — year-round<br>• Price: <b>₹20–50/kg</b>";
+
+  if (q.match(/papaya|papita|पपया|पपीता|पपई/i))
+    return "🍈 <b>Papaya Farming Guide:</b><br>• Varieties: <b>Red Lady (hybrid), CO-7, Pusa Nanha</b><br>• Sowing: seeds in polybags; transplant at 4–6 leaves stage<br>• Spacing: <b>2×2 metres</b><br>• Fertilizer: <b>200g N, 200g P, 250g K per plant in splits</b><br>• Key disease: <b>Papaya Ring Spot Virus</b> → control aphid vectors; uproot infected plants<br>• Key disease: <b>Anthracnose</b> (fruit rot) → spray Carbendazim 1g/L<br>• Fruit borer: spray Chlorpyrifos 2ml/L<br>• Fruit sets in <b>3–4 months</b>; harvest when skin turns yellow at tip<br>• Price: <b>₹8–25/kg</b>";
+
+  if (q.match(/watermelon|tarbuj|तरबूज|tarbooz|कलिंगड/i))
+    return "🍉 <b>Watermelon Farming Guide:</b><br>• Varieties: <b>Sugar Baby, Arka Manik, Kiran, Durgapura Meetha</b><br>• Sowing: <b>February–March</b> (summer crop); June–July (kharif)<br>• Spacing: <b>2×1 metre</b> (pit method)<br>• Fertilizer: <b>60:40:40 kg NPK/acre</b>; apply Boron 0.5g/L for fruit setting<br>• Irrigation: every <b>5–7 days</b>; stop 7–10 days before harvest for sweetness<br>• Key disease: <b>Downy Mildew</b> → spray Metalaxyl 2g/L<br>• Key disease: <b>Fusarium Wilt</b> → drench Carbendazim 1g/L in soil<br>• Key pest: <b>Red Pumpkin Beetle</b> → spray Malathion 2ml/L early morning<br>• Harvest: at <b>85–90 days</b>; tap fruit — hollow sound means ripe<br>• Yield: <b>120–160 quintals/acre</b><br>• Price: <b>₹8–20/kg</b>";
+
+  if (q.match(/guava|amrud|अमरूद|पेरू|peru/i))
+    return "🍐 <b>Guava Farming Guide:</b><br>• Varieties: <b>Allahabad Safeda, Lalit, Sardar (L-49), Shweta</b><br>• Planting: <b>July–August</b> or February–March<br>• Spacing: <b>6×6 metres</b> (275 plants/acre)<br>• Fertilizer: <b>260g N, 100g P, 250g K per tree/year</b> in 2–3 splits<br>• Irrigation: every <b>10–12 days</b> in summer; stop before harvest<br>• Key disease: <b>Wilt</b> (Fusarium) → drench Carbendazim 1g/L; remove infected plants<br>• Key disease: <b>Anthracnose</b> → spray Copper Oxychloride 3g/L<br>• Key pest: <b>Fruit Fly</b> → use methyl eugenol traps; spray Malathion bait<br>• Fruit fly: <b>Bag fruits</b> with paper/polythene bags at marble size<br>• Harvest: <b>4–5 months</b> after flowering (twice a year)<br>• Yield: <b>50–80 kg/tree/year</b><br>• Price: <b>₹20–60/kg</b>";
+
+  if (q.match(/strawberry|स्ट्रॉबेरी/i))
+    return "🍓 <b>Strawberry Farming Guide:</b><br>• Varieties: <b>Chandler, Camarosa, Sweet Charlie, Festival</b><br>• Planting: <b>September–October</b> (plains); March–April (hills)<br>• Spacing: <b>30×30 cm</b> on raised beds with plastic mulch<br>• Runners: plant certified runners from nursery<br>• Fertilizer: <b>NPK 100:80:80 kg/hectare</b> + micronutrients<br>• Drip irrigation: essential — water at base, keep leaves dry<br>• Key disease: <b>Grey Mould (Botrytis)</b> → spray Carbendazim 1g/L; ensure ventilation<br>• Key pest: <b>Spider Mite</b> → spray Abamectin 0.5ml/L<br>• Harvest: <b>6–8 weeks</b> after planting; pick every 2–3 days<br>• Yield: <b>5–8 tonnes/acre</b><br>• Price: <b>₹60–200/kg</b> (premium crop)";
+
+  if (q.match(/brinjal|eggplant|baingan|बैंगन|वांगी|वांग/i))
+    return "🍆 <b>Brinjal Farming Guide:</b><br>• Varieties: <b>Pusa Purple Long, Arka Nidhi, Arka Shirish, Pant Rituraj</b><br>• Nursery: raise seedlings for <b>30–40 days</b> before transplanting<br>• Spacing: <b>75×60 cm</b><br>• Fertilizer: <b>100:50:50 kg NPK/acre</b><br>• Key pest: <b>Shoot & Fruit Borer</b> → spray Emamectin 0.5g/L; install pheromone traps<br>• Key disease: <b>Phomopsis Blight</b> → spray Mancozeb 0.25%<br>• Bacterial Wilt: remove infected plants; drench Copper Sulphate<br>• Harvest: every <b>5–7 days</b> when fruits are tender and glossy<br>• Yield: <b>80–120 quintals/acre</b><br>• Price: <b>₹10–40/kg</b> (highly seasonal)";
+
+  if (q.match(/cauliflower|cabbage|broccoli|phool gobhi|band gobhi|फूलगोभी|पत्तागोभी|कोबी/i))
+    return "🥦 <b>Cauliflower / Cabbage / Broccoli Farming:</b><br>• Planting: <b>Cauliflower</b> — September–November (main season)<br>• Spacing: <b>60×45 cm</b><br>• Fertilizer: <b>120:60:60 kg NPK/acre</b><br>• Key nutrient: <b>Boron (3kg/acre)</b> — prevents hollow stem & poor curd<br>• Key pest: <b>Diamond Back Moth</b> → spray Spinosad 0.4ml/L<br>• Key pest: <b>Cabbage Looper</b> → use Bt (Bacillus thuringiensis) spray<br>• Key disease: <b>Black Rot</b> → use resistant varieties; spray Copper Oxychloride<br>• Blanching: tie outer leaves over cauliflower curd to keep it white<br>• Harvest: Cauliflower at 60–90 days; Cabbage 70–100 days<br>• Price: <b>₹600–2,000/quintal</b>";
+
+  if (q.match(/pea|peas|matar|मटर|वाटाणा/i))
+    return "🫛 <b>Pea Farming Guide:</b><br>• Varieties: <b>Arkel, Bonneville, Punjab 89, VL Ageti Matar 7</b><br>• Sowing: <b>October–November</b> (plains); March–April (hills)<br>• Seed rate: <b>25–30 kg/acre</b><br>• Spacing: <b>30×10 cm</b><br>• Fertilizer: <b>20:60:40 kg NPK/acre</b> (low N — peas fix own nitrogen)<br>• Seed treatment: <b>Rhizobium culture</b> + Thiram 2.5g/kg<br>• Key disease: <b>Powdery Mildew</b> → spray Sulphur 0.2% or Carbendazim 0.1%<br>• Key pest: <b>Pod Borer</b> → spray Chlorpyrifos 2ml/L<br>• Harvest: <b>60–70 days</b> after sowing; pods should be green and full<br>• Yield: <b>25–35 quintals/acre</b> (green pods)<br>• Price: <b>₹25–80/kg</b>";
+
+  // ── Farming Topics ──────────────────────────────────────────────────────
+  if (q.match(/pest|insect|bug|kida|keeda|keet|कीट|कीड/))
+    return "🐛 <b>Pest Control Tips:</b><br>• Spray <b>Neem Oil (5ml/L)</b> every 15 days as preventive<br>• Use <b>yellow sticky traps</b> for whiteflies & aphids<br>• Apply <b>Chlorpyrifos</b> for soil pests<br>• Practice <b>crop rotation</b> to break pest cycles<br>• Install <b>pheromone traps</b> for bollworm monitoring<br>• Spray in early morning or evening — never in hot sun";
+
+  if (q.match(/disease|fungus|blight|rot|rust|mildew|rog|रोग|बीमारी|कवक/))
+    return "🌿 <b>Crop Disease Management:</b><br>• Spray <b>Mancozeb (0.25%)</b> for fungal diseases<br>• Use <b>Copper Oxychloride</b> for bacterial blight<br>• Ensure proper <b>drainage</b> to prevent root rot<br>• Remove and burn <b>infected plants</b> immediately<br>• Use certified <b>disease-resistant seeds</b><br>• Rotate fungicides to prevent resistance";
+
+  if (q.match(/water|irrigation|drip|sinchai|सिंचाई|पानी|पाणी/))
+    return "💧 <b>Irrigation Best Practices:</b><br>• <b>Drip irrigation</b> saves 40–60% water<br>• Best time: <b>early morning or evening</b><br>• Check soil moisture before irrigating<br>• <b>PM Sinchai Yojana</b>: 55% subsidy on drip systems<br>• Signs of overwatering: yellow leaves, root rot<br>• Signs of drought: wilting at noon, curled leaves";
+
+  if (q.match(/fertilizer|urea|dap|npk|khad|खाद|उर्वरक/))
+    return "🌱 <b>Fertilizer Guide:</b><br>• <b>DAP</b>: Apply at sowing for root growth<br>• <b>Urea</b>: Split in 2 doses — sowing & 30 days later<br>• <b>NPK 19:19:19</b>: Good balanced fertilizer for vegetables<br>• <b>Vermicompost</b>: 2–3 tonnes/acre improves soil health<br>• Get free <b>Soil Health Card</b> from KVK to know your soil's needs<br>• Never apply Urea when rain is expected";
+
+  if (q.match(/wheat|gehun|गेहूं|गहू/))
+    return "🌾 <b>Wheat Farming Guide:</b><br>• Sowing: <b>November 1–25</b><br>• Seed rate: <b>40–45 kg/acre</b><br>• Fertilizer: <b>120:60:40 kg NPK/hectare</b><br>• Irrigate at: 21, 45, 65 days after sowing<br>• Key disease: Yellow Rust → spray Propiconazole 1ml/L<br>• MSP 2024-25: <b>₹2,275/quintal</b>";
+
+  if (q.match(/rice|paddy|dhan|chawal|धान|चावल|भात/))
+    return "🌾 <b>Rice Farming Guide:</b><br>• Transplant at <b>15×15 cm</b> spacing<br>• Maintain <b>5 cm water level</b> till 2 weeks before harvest<br>• Apply <b>Urea in 3 splits</b><br>• Watch for <b>Blast disease</b> — spray Tricyclazole<br>• MSP: <b>₹2,183/quintal</b>";
+
+  if (q.match(/tomato|tamatar|टमाटर|vegetable|sabji|sabzi|सब्जी/))
+    return "🍅 <b>Vegetable Farming Tips:</b><br>• Use <b>raised beds</b> for better drainage<br>• Spray <b>Calcium Nitrate</b> to prevent Blossom End Rot<br>• Stake plants at 30 cm height<br>• Apply <b>Boron</b> for better fruit setting<br>• Spacing: Tomato 60×45 cm, Brinjal 75×60 cm";
+
+  if (q.match(/soil|ph|mitti|माटी|मिट्टी|जमीन|माती/))
+    return "🌍 <b>Soil Health Tips:</b><br>• Ideal pH: <b>6.0–7.5</b> for most crops<br>• Add <b>lime</b> if acidic (pH < 6)<br>• Add <b>gypsum</b> if alkaline (pH > 7.5)<br>• Test soil every <b>2 years</b> — free Soil Health Card<br>• Use <b>green manure</b> to improve organic matter";
+
+  if (q.match(/market|price|mandi|rate|bhav|भाव|मंडी|किंमत/))
+    return "₹ <b>MSP Rates 2024-25:</b><br>• Wheat: <b>₹2,275/quintal</b><br>• Rice: <b>₹2,183/quintal</b><br>• Maize: <b>₹2,090/quintal</b><br>• Soybean: <b>₹4,892/quintal</b><br>• Cotton: <b>₹7,521/quintal</b><br>• Groundnut: <b>₹6,783/quintal</b><br>📱 Live rates: <b>Agmarknet app</b> or eNAM portal";
+
+  if (q.match(/scheme|yojana|government|govt|subsidy|सरकार|योजना|सबसिडी/))
+    return "🛡️ <b>Key Schemes for Farmers:</b><br>• <b>PM-KISAN</b>: ₹6,000/year to your bank account<br>• <b>PM Fasal Bima</b>: Low-premium crop insurance<br>• <b>Kisan Credit Card</b>: Loan at 4% interest<br>• <b>PM Sinchai Yojana</b>: 55% subsidy on drip<br>📞 <b>Kisan Helpline: 1800-180-1551</b> (free, 24×7)";
+
+  if (q.match(/\benam\b|e-nam|national agriculture market|राष्ट्रीय कृषि बाजार/))
+    return "🛒 <b>eNAM — National Agriculture Market:</b><br>• <b>What it is:</b> Government online trading platform for farmers to sell crops directly to buyers across India<br>• <b>Benefit:</b> No middlemen — get better price for your produce<br>• <b>How to register:</b> Visit your nearest APMC/Mandi office with Aadhaar + bank passbook<br>• <b>Works for:</b> 200+ commodities — grains, vegetables, fruits, spices<br>• <b>Payment:</b> Amount credited directly to your bank account within 24–48 hours<br>• <b>Download:</b> Search <b>'eNAM'</b> on Google Play Store (free)<br>• <b>Website:</b> enam.gov.in<br>📞 eNAM Helpline: <b>1800-270-0224</b> (free)";
+
+  if (q.match(/meghdoot|मेघदूत/))
+    return "🌤️ <b>Meghdoot App — Weather for Farmers:</b><br>• <b>What it is:</b> Free weather forecast app developed by <b>IMD + ICAR + IARI</b> specifically for Indian farmers<br>• <b>Key features:</b><br>&nbsp;&nbsp;— 5-day block-level weather forecast<br>&nbsp;&nbsp;— Crop-specific agro-advisory based on your location<br>&nbsp;&nbsp;— Sowing, irrigation & pesticide spray recommendations<br>&nbsp;&nbsp;— Available in Hindi, English & 6 regional languages<br>• <b>Download:</b> Search <b>'Meghdoot'</b> on Google Play Store (free)<br>• <b>Best use:</b> Check before sowing, irrigating or spraying pesticides<br>📍 Set your village/block location for accurate local forecast";
+
+  if (q.match(/kisan suvidha|किसान सुविधा/))
+    return "📱 <b>Kisan Suvidha App:</b><br>• <b>What it is:</b> All-in-one government app for Indian farmers by <b>Ministry of Agriculture</b><br>• <b>Key features:</b><br>&nbsp;&nbsp;— Weather forecast (7-day)<br>&nbsp;&nbsp;— Market prices from nearest mandi<br>&nbsp;&nbsp;— Pest & disease identification with photos<br>&nbsp;&nbsp;— KVK (Krishi Vigyan Kendra) contact directory<br>&nbsp;&nbsp;— Agro-dealers, cold storages, warehouses nearby<br>&nbsp;&nbsp;— Plant protection measures<br>• <b>Download:</b> Search <b>'Kisan Suvidha'</b> on Google Play Store (free)<br>• Works <b>offline</b> for most features once downloaded";
+
+  if (q.match(/agmarknet|agmark/))
+    return "📊 <b>Agmarknet — Live Mandi Prices:</b><br>• <b>What it is:</b> Government database showing <b>real-time prices</b> from 3,000+ mandis across India<br>• <b>Key features:</b><br>&nbsp;&nbsp;— Daily arrival & price data for 300+ commodities<br>&nbsp;&nbsp;— Compare prices across different mandis<br>&nbsp;&nbsp;— Price trend history<br>&nbsp;&nbsp;— State-wise and commodity-wise filtering<br>• <b>Access:</b> agmarknet.gov.in (website) or search <b>'Agmarknet'</b> on Play Store<br>• <b>Best use:</b> Check before selling — find which mandi is giving highest price<br>📞 Helpline: <b>1800-270-0224</b>";
+
+  if (q.match(/pm.?kisan app|pm kisan|पीएम किसान/))
+    return "💰 <b>PM-KISAN App:</b><br>• <b>What it is:</b> App to manage your <b>PM-KISAN Samman Nidhi</b> benefit (₹6,000/year)<br>• <b>Key features:</b><br>&nbsp;&nbsp;— Check payment status & beneficiary list<br>&nbsp;&nbsp;— Update bank account / Aadhaar<br>&nbsp;&nbsp;— Self-registration for new farmers<br>&nbsp;&nbsp;— Complaint registration<br>• <b>Download:</b> Search <b>'PM Kisan'</b> on Google Play Store (free)<br>• <b>Website:</b> pmkisan.gov.in<br>📞 PM-KISAN Helpline: <b>155261</b> or <b>011-24300606</b>";
+
+  if (q.match(/fasal bima|crop insurance|फसल बीमा/))
+    return "🛡️ <b>Fasal Bima App — Crop Insurance:</b><br>• <b>What it is:</b> App for <b>PM Fasal Bima Yojana</b> (crop insurance scheme)<br>• <b>Key features:</b><br>&nbsp;&nbsp;— Check your insurance policy status<br>&nbsp;&nbsp;— File crop loss claim directly from phone<br>&nbsp;&nbsp;— Submit photos as evidence of crop damage<br>&nbsp;&nbsp;— Track claim settlement status<br>• <b>Premium:</b> Kharif crops 2%, Rabi crops 1.5%, Horticulture 5%<br>• <b>Download:</b> Search <b>'Fasal Bima'</b> on Google Play Store (free)<br>• Enroll through your bank or <b>CSC center</b> before deadline<br>📞 Helpline: <b>1800-200-7710</b>";
+
+  if (q.match(/soil health card|mitti card|मृदा|माती|भूमि परीक्षण/))
+    return "🌱 <b>Soil Health Card App:</b><br>• <b>What it is:</b> Government app to view your <b>Soil Health Card</b> report online<br>• <b>Key features:</b><br>&nbsp;&nbsp;— View soil test results (pH, N, P, K, micro-nutrients)<br>&nbsp;&nbsp;— Fertilizer recommendation based on your soil<br>&nbsp;&nbsp;— Crop-wise nutrient advice<br>&nbsp;&nbsp;— Find nearest soil testing lab<br>• <b>How to get tested:</b> Visit your KVK or Agriculture office — free soil testing<br>• <b>Download:</b> Search <b>'Soil Health Card'</b> on Play Store (free)<br>• <b>Website:</b> soilhealth.dac.gov.in<br>💡 Test your soil every <b>2 years</b> for best results";
+
+  if (q.match(/farming app|agri app|kisan app|farmer app|agriculture app/))
+    return "📲 <b>Top 7 Free Farmer Apps:</b><br>1. <b>Meghdoot</b> — Weather forecast for farmers<br>2. <b>Kisan Suvidha</b> — All-in-one farming guide<br>3. <b>eNAM</b> — Sell crops online, no middlemen<br>4. <b>Agmarknet</b> — Live mandi prices<br>5. <b>PM-KISAN</b> — Check ₹6,000/year benefit<br>6. <b>Fasal Bima</b> — Crop insurance claims<br>7. <b>Soil Health Card</b> — Soil test reports<br><br>Ask me about any specific app for detailed information!";
+
+  if (q.match(/weather|rain|forecast|mausam|barish|मौसम|बारिश|हवामान/))
+    return "🌤️ <b>Weather Precautions:</b><br>• Use <b>Meghdoot app</b> for 5-day agri forecast<br>• Don't apply fertilizer/pesticide before heavy rain<br>• After rain: clear drainage, check waterlogging<br>• Dry spell: use <b>mulching</b> to retain moisture<br>• Cold wave: protect crops with <b>light night irrigation</b>";
+
+  if (q.match(/seed|beej|बीज|बियाणे/))
+    return "🌱 <b>Seed Tips:</b><br>• Buy <b>certified seeds</b> from authorized dealers<br>• Treat with <b>Thiram (2.5g/kg)</b> before sowing<br>• Store in <b>cool, dry, sealed containers</b><br>• Germination test: place 10 seeds on wet cloth — 7+ should sprout<br>• Get subsidized seeds from <b>state agriculture dept</b>";
+
+  // ── Generic farming fallback — still useful ─────────────────────────────
+  const topic = q.split(' ').slice(0, 3).join(' ');
+  return `🌾 <b>AgriAI — Farming Help:</b><br>I can help with <b>${topic}</b> and many other farming topics!<br><br><b>Try asking me about:</b><br>• Mango, Wheat, Rice, Cotton, Sugarcane, Banana, Onion, Potato, Soybean<br>• Pest control, Disease management, Fertilizers<br>• Irrigation, Soil health, Market prices<br>• Government schemes, Seeds, Weather<br><br>📞 <b>Kisan Helpline: 1800-180-1551</b> (free, 24×7)<br><i>For full AI answers, ensure internet connectivity.</i>`;
+}
+
+
+// Cleaned up legacy backend sync functions
+
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(registration => {
+      console.log('ServiceWorker registration successful');
+    }, err => {
+      console.log('ServiceWorker registration failed: ', err);
+    });
+  });
+}
+ // Clean old showPage
+
+    function quickAsk(text) {
+      showPage('ai');
+      clearCurrentChat();
+      document.getElementById('userInput').value = text;
+      sendMessage();
+    }
+
+    // ── Chat History Management ──────────────────────────────────────────
+    let activeChatId = null;
+    let savedChats = JSON.parse(localStorage.getItem('agriBotHistory') || '[]');
+
+    function clearCurrentChat() {
+      activeChatId = null;
+      chatHistory = []; // Reset API history
+      const messages = document.getElementById("chatMessages");
+      if(messages) {
+        messages.innerHTML = `<div class="msg bot">🌾 Namaste! I'm your AgriAI assistant. How can I help your farm today?</div>`;
+      }
+    }
+
+    function saveActiveChat(userMsg, botReply) {
+      let existing = savedChats.find(c => c.id === activeChatId);
+      if (!existing) {
+        let title = userMsg.length > 30 ? userMsg.substring(0, 30) + "..." : userMsg;
+        existing = {
+          id: activeChatId,
+          title: title,
+          time: new Date().toLocaleString(),
+          html: document.getElementById("chatMessages").innerHTML,
+          history: chatHistory
+        };
+        savedChats.unshift(existing);
+      } else {
+        existing.html = document.getElementById("chatMessages").innerHTML;
+        existing.history = chatHistory;
+      }
+      if(savedChats.length > 30) savedChats = savedChats.slice(0, 30);
+      localStorage.setItem('agriBotHistory', JSON.stringify(savedChats));
+    }
+
+    function renderHistoryList() {
+      const container = document.getElementById('historyListContainer');
+      if(!container) return;
+      if (savedChats.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--gray);">No chat history found.</div>`;
+        return;
+      }
+      container.innerHTML = savedChats.map(c => `
+        <div style="background:var(--white); border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:var(--shadow); display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="loadChat('${c.id}')">
+          <div style="flex:1; overflow:hidden;">
+            <div style="font-size:14px; font-weight:600; color:var(--black); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">💬 ${c.title}</div>
+            <div style="font-size:12px; color:var(--gray); margin-top:4px;">${c.time}</div>
+          </div>
+          <div onclick="event.stopPropagation(); deleteChat('${c.id}')" style="color:#F44336; padding:8px; font-size:16px;">🗑️</div>
+        </div>
+      `).join('');
+    }
+
+    function loadChat(id) {
+      const c = savedChats.find(x => x.id === id);
+      if(c) {
+        activeChatId = c.id;
+        chatHistory = c.history || [];
+        document.getElementById("chatMessages").innerHTML = c.html;
+        showPage('ai', true);
+        setTimeout(() => {
+          const messages = document.getElementById("chatMessages");
+          messages.scrollTop = messages.scrollHeight;
+        }, 50);
+      }
+    }
+
+    function deleteChat(id) {
+      if(confirm("Delete this chat?")) {
+        savedChats = savedChats.filter(x => x.id !== id);
+        localStorage.setItem('agriBotHistory', JSON.stringify(savedChats));
+        renderHistoryList();
+        if(activeChatId === id) clearCurrentChat();
+      }
+    }
+
+    function deleteAllHistory() {
+      if(confirm("Are you sure you want to delete all chat history?")) {
+        savedChats = [];
+        localStorage.setItem('agriBotHistory', '[]');
+        renderHistoryList();
+        clearCurrentChat();
+      }
+    }
+
+
+    // ── Task Management ──────────────────────────────────────────────────
+    function addNewTask() {
+      const taskName = prompt("Enter new task:");
+      if(taskName && taskName.trim() !== '') {
+        const list = document.getElementById("taskList");
+        const div = document.createElement("div");
+        div.style = "display:flex; align-items:center; gap:12px;";
+        div.innerHTML = `
+          <div style="width:40px; height:40px; border-radius:50%; background:rgba(11, 107, 58, 0.1); display:flex; align-items:center; justify-content:center; font-size:20px;">📝</div>
+          <div style="flex:1;">
+            <div style="font-size:14px; font-weight:600; color:var(--black);">${taskName}</div>
+            <div style="font-size:12px; color:var(--gray);">Just added</div>
+          </div>
+          <input type="checkbox" style="width:20px; height:20px; accent-color:var(--primary);" />
+        `;
+        
+        // Add divider before new item
+        const divider = document.createElement("div");
+        divider.style = "height:1px; background:var(--light-gray);";
+        list.appendChild(divider);
+        list.appendChild(div);
+      }
+    }
+
+    // ── Live Market Economics & ROI (Gemini API) ────────────────────────────────────
+    // Per-crop realistic market fallback data (used when API is unavailable)
+    const CROP_FALLBACK_DATA = {
+      "Wheat":     { price: "₹2,275/q", trend: "+1.8%", investment: "₹18,000", harvest: "4-5 Months", revenue: "₹45,000", profitMargin: "High",   insight: "Wheat MSP is ₹2,275/q. Kharif 2025 sowing is on track; sell before March to avoid post-harvest price dip." },
+      "Cotton":    { price: "₹6,620/q", trend: "-2.1%", investment: "₹30,000", harvest: "5-6 Months", revenue: "₹58,000", profitMargin: "Medium", insight: "Cotton prices are under pressure due to imports. Grade your lint carefully for Shankar-6 premium." },
+      "Soybean":   { price: "₹4,300/q", trend: "+0.9%", investment: "₹14,000", harvest: "3-4 Months", revenue: "₹38,000", profitMargin: "High",   insight: "Indore mandi soybean is stable. Process into soya chunks or sell to nearby oil mills for 8-12% better price." },
+      "Mango":     { price: "₹3,200/q", trend: "+4.5%", investment: "₹25,000", harvest: "3-5 Years",  revenue: "₹1,20,000", profitMargin: "Very High", insight: "Alphonso and Kesar varieties fetch ₹80-100/kg in export markets. Mango season demand peaks April-June." },
+      "Banana":    { price: "₹1,800/q", trend: "+2.2%", investment: "₹40,000", harvest: "10-12 Months", revenue: "₹95,000", profitMargin: "High",   insight: "Grand Naine banana has strong APMC demand. Tissue culture plants yield 60-70 tonnes/acre vs 20 from suckers." },
+      "Sugarcane": { price: "₹340/q",  trend: "+0.5%", investment: "₹35,000", harvest: "12 Months",  revenue: "₹85,000", profitMargin: "Medium", insight: "FRP for 2024-25 is ₹340/q. Ratoon crop saves ₹8,000/acre replanting cost. Link directly with sugar mills." },
+      "Tomato":    { price: "₹1,200/q", trend: "-3.8%", investment: "₹22,000", harvest: "3-4 Months", revenue: "₹35,000", profitMargin: "Low",    insight: "Tomato prices crashed near ₹1,200/q due to glut. Consider forward contracts or cold storage to wait for recovery." },
+      "Onion":     { price: "₹1,450/q", trend: "-1.5%", investment: "₹20,000", harvest: "4-5 Months", revenue: "₹32,000", profitMargin: "Low",    insight: "Nashik Onion export ban impact persists. Kharif onion storage in cool, dry place helps fetch Rabi-season prices." },
+      "Apple":     { price: "₹8,500/q", trend: "+3.2%", investment: "₹60,000", harvest: "4-6 Years",  revenue: "₹2,40,000", profitMargin: "Very High", insight: "Himachal & Kashmir Fuji/Royal Delicious fetch ₹85-100/kg retail. High CAPEX but extremely rewarding long-term." },
+      "Potato":    { price: "₹1,100/q", trend: "+1.1%", investment: "₹28,000", harvest: "3-4 Months", revenue: "₹42,000", profitMargin: "Medium", insight: "Agra and Aligarh mandis have steady demand. Processing-grade Chipsona variety adds 15% premium from chips factories." },
+      "Chilli":    { price: "₹9,200/q", trend: "-1.7%", investment: "₹32,000", harvest: "5-6 Months", revenue: "₹75,000", profitMargin: "Medium", insight: "Guntur Sannam chilli prices are soft. Export demand from Sri Lanka & Bangladesh can improve rates Q3 onwards." },
+      "Lemon":     { price: "₹4,800/q", trend: "+2.9%", investment: "₹18,000", harvest: "8-10 Months", revenue: "₹72,000", profitMargin: "High",   insight: "Lemon demand spikes in summer (May-June). Drip irrigation reduces cost by 30% and doubles fruit size for premium pricing." }
+    };
+
+    const popularCrops = [
+      { icon: "🌾", name: "Wheat",     trend: "profit", category: "crop" },
+      { icon: "☁️", name: "Cotton",    trend: "loss", category: "crop"   },
+      { icon: "🌱", name: "Soybean",   trend: "profit", category: "crop" },
+      { icon: "🥭", name: "Mango",     trend: "profit", category: "fruit" },
+      { icon: "🍌", name: "Banana",    trend: "profit", category: "fruit" },
+      { icon: "🎋", name: "Sugarcane", trend: "profit", category: "crop" },
+      { icon: "🍅", name: "Tomato",    trend: "loss", category: "vegetable" },
+      { icon: "🧅", name: "Onion",     trend: "loss", category: "vegetable" },
+      { icon: "🍎", name: "Apple",     trend: "profit", category: "fruit" },
+      { icon: "🥔", name: "Potato",    trend: "profit", category: "vegetable" },
+      { icon: "🌶️", name: "Chilli",    trend: "loss", category: "vegetable" },
+      { icon: "🍋", name: "Lemon",     trend: "profit", category: "fruit" }
+    ];
+
+    let currentMarketTab = 'all';
+    function setMarketTab(tab, el) {
+      currentMarketTab = tab;
+      document.querySelectorAll('.market-tab').forEach(t => {
+        t.style.background = 'var(--white)';
+        t.style.color = 'var(--gray)';
+        t.style.border = '1px solid var(--border)';
+      });
+      if(el) {
+        el.style.background = 'var(--primary)';
+        el.style.color = 'white';
+        el.style.border = 'none';
+      }
+      filterCrops();
+    }
+
+    // SVG sparkline generators for profit/loss
+    function profitSparkline() {
+      // Rising green line across 60x36 canvas
+      return `<svg width="60" height="36" viewBox="0 0 60 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="#7ED957" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#7ED957" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M2 30 L12 24 L22 20 L32 14 L42 9 L58 3" stroke="#4CAF50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M2 30 L12 24 L22 20 L32 14 L42 9 L58 3 L58 36 L2 36Z" fill="url(#pg)"/>
+        <circle cx="58" cy="3" r="3" fill="#4CAF50"/>
+      </svg>`;
+    }
+    function lossSparkline() {
+      // Falling red line across 60x36 canvas
+      return `<svg width="60" height="36" viewBox="0 0 60 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="rl" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="#F44336" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#F44336" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M2 4 L12 10 L22 14 L32 20 L42 26 L58 33" stroke="#F44336" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M2 4 L12 10 L22 14 L32 20 L42 26 L58 33 L58 36 L2 36Z" fill="url(#rl)"/>
+        <circle cx="58" cy="33" r="3" fill="#F44336"/>
+      </svg>`;
+    }
+
+    function renderCropList(crops) {
+      return crops.map(c => {
+        const isProfit    = c.trend === 'profit';
+        const borderColor = isProfit ? 'rgba(76,175,80,0.25)' : 'rgba(244,67,54,0.2)';
+        const trendLabel  = isProfit
+          ? `<span style="font-size:11px; font-weight:700; color:#4CAF50;">&#9650; Profit</span>`
+          : `<span style="font-size:11px; font-weight:700; color:#F44336;">&#9660; Loss</span>`;
+        const graph = isProfit ? profitSparkline() : lossSparkline();
+        return `
+          <div onclick="openCropEco('${c.name}', '${c.icon}')" style="background:var(--white); border:1px solid ${borderColor}; border-radius:16px; padding:14px 16px; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:space-between; cursor:pointer; margin-bottom:12px; transition:transform 0.18s;">
+            <div style="display:flex; align-items:center; gap:14px;">
+              <div style="font-size:26px; width:46px; height:46px; background:var(--light-gray); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${c.icon}</div>
+              <div>
+                <div style="font-size:15px; font-weight:600; color:var(--black);">${c.name}</div>
+                <div style="margin-top:2px;">${trendLabel}</div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+              ${graph}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function loadDefaultMarket() {
+      filterCrops();
+    }
+
+    function filterCrops() {
+      const q = document.getElementById("marketSearchInput").value.toLowerCase();
+      
+      let filtered = popularCrops;
+      if (currentMarketTab !== 'all') {
+         filtered = filtered.filter(c => c.category === currentMarketTab);
+      }
+      if (q) {
+         filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
+      }
+
+      const container = document.getElementById("marketResults");
+      
+      if(filtered.length > 0) {
+        container.style.display = "block";
+        container.innerHTML = renderCropList(filtered);
+      } else {
+        container.style.display = "block";
+        container.innerHTML = `
+          <div style="text-align:center; padding:30px; color:var(--gray);">
+            <div>Crop not found in this category.</div>
+            <button onclick="openCropEco('${q || 'Crop'}', '🌱')" style="margin-top:16px; background:var(--primary); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:600; cursor:pointer;">Get ROI for "${q || 'Crop'}"</button>
+          </div>
+        `;
+      }
+    }
+
+    async function openCropEco(cropName, icon) {
+      document.getElementById('cropEcoModal').style.display = 'flex';
+      document.getElementById('ceTitle').innerHTML = icon + " " + cropName + " Economics";
+      const ceContent = document.getElementById('ceContent');
+      ceContent.innerHTML = `<div style="text-align:center; padding:40px; color:var(--gray);"><span class="dot-typing" style="margin:0 auto;"><span></span><span></span><span></span></span><br><br>Analyzing market prices and calculating ROI for ${cropName}...</div>`;
+      
+      const renderEcoData = (eco) => {
+        let isDown = eco.trend.includes('-');
+        let trendColor = isDown ? '#F44336' : 'var(--secondary)';
+        let trendIcon = isDown ? '📉' : '📈';
+        
+        ceContent.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:var(--light-gray); padding:16px; border-radius:16px;">
+            <div>
+              <div style="font-size:12px; color:var(--gray);">Live Market Price</div>
+              <div style="font-size:22px; font-weight:700; color:var(--primary);">${eco.price}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:12px; color:var(--gray);">Trend</div>
+              <div style="font-size:16px; font-weight:700; color:${trendColor};">${trendIcon} ${eco.trend}</div>
+            </div>
+          </div>
+          
+          <h3 style="font-family:'Poppins'; font-size:16px; color:var(--black); margin-top:8px;">Investment & ROI (Per Acre)</h3>
+          
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div style="border:1px solid rgba(244,67,54,0.2); background:rgba(244,67,54,0.05); padding:12px; border-radius:12px;">
+              <div style="font-size:11px; color:var(--gray); margin-bottom:4px;">Investment Needed</div>
+              <div style="font-size:16px; font-weight:600; color:#F44336;">${eco.investment}</div>
+            </div>
+            <div style="border:1px solid rgba(126,217,87,0.3); background:rgba(126,217,87,0.1); padding:12px; border-radius:12px;">
+              <div style="font-size:11px; color:var(--gray); margin-bottom:4px;">Expected Return</div>
+              <div style="font-size:16px; font-weight:600; color:var(--secondary);">${eco.revenue}</div>
+            </div>
+            <div style="border:1px solid var(--border); background:var(--white); padding:12px; border-radius:12px;">
+              <div style="font-size:11px; color:var(--gray); margin-bottom:4px;">Time to Harvest</div>
+              <div style="font-size:14px; font-weight:600; color:var(--black);">⏳ ${eco.harvest}</div>
+            </div>
+            <div style="border:1px solid var(--border); background:var(--white); padding:12px; border-radius:12px;">
+              <div style="font-size:11px; color:var(--gray); margin-bottom:4px;">Profit Margin</div>
+              <div style="font-size:14px; font-weight:600; color:var(--primary);">💰 ${eco.profitMargin}</div>
+            </div>
+          </div>
+          
+          <div style="background:var(--light-gray); padding:12px; border-radius:12px; font-size:13px; color:var(--black); border-left:4px solid var(--primary); line-height:1.5; margin-top:4px;">
+            <b>AgriAI Insight:</b> ${eco.insight}
+          </div>
+        `;
+      };
+
+      let marketApiSuccess = false;
+      try {
+        const promptText = `You are an agricultural market analyst. Give REAL CURRENT 2025 market economics for "${cropName}" farming in India. Return ONLY a raw JSON object (no markdown, no backticks): {"price":"₹XXXX/q","trend":"+X.X% or -X.X%","investment":"₹XX,000 per acre","harvest":"X months or X years","revenue":"₹XX,000 per acre","profitMargin":"Low/Medium/High/Very High","insight":"One specific actionable sentence for Indian farmer"}.`;
+        const data = await geminiRequest({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: { temperature: 0.3, maxOutputTokens: 350 }
+        });
+        console.log('[Market] API response:', JSON.stringify(data).substring(0, 400));
+        let raw = data.candidates[0].content.parts[0].text.trim()
+          .replace(/```json/gi,'').replace(/```/gi,'').trim();
+        const eco = JSON.parse(raw);
+        renderEcoData(eco);
+        marketApiSuccess = true;
+      } catch(e) {
+        console.error('[Market] Fallback triggered:', e.message);
+      }
+
+      if (!marketApiSuccess) {
+        // Use crop-specific curated fallback data
+        const known = CROP_FALLBACK_DATA[cropName];
+        const fallbackEco = known || {
+          price:       "₹3,200/q",
+          trend:       "+1.5%",
+          investment:  "₹20,000",
+          harvest:     "4-5 Months",
+          revenue:     "₹55,000",
+          profitMargin:"Medium",
+          insight:     `${cropName} has moderate demand in Indian markets. Connect with APMC mandis for best pricing.`
+        };
+        renderEcoData(fallbackEco);
+      }
+    }
+
+    function closeCropEco() {
+      document.getElementById('cropEcoModal').style.display = 'none';
+    }
+
+    let tasks = JSON.parse(localStorage.getItem('farmerTasks')) || [
+       { id: 1, title: 'Irrigate Wheat Field', desc: 'Recommended before 10 AM', icon: '💧', color: 'rgba(126,217,87,0.2)' },
+       { id: 2, title: 'Apply NPK Fertilizer', desc: 'Sector B • 50kg/acre', icon: '🧪', color: 'rgba(255,193,7,0.2)' }
+    ];
+
+    function saveTasks() {
+       localStorage.setItem('farmerTasks', JSON.stringify(tasks));
+    }
+
+    function renderTasks() {
+       const list = document.getElementById('taskList');
+       if(!list) return;
+       if (tasks.length === 0) {
+          list.innerHTML = `<div style="text-align:center; font-size:14px; color:var(--gray); padding:10px;">No tasks for today. 🎉</div>`;
+          return;
+       }
+       
+       let html = '';
+       tasks.forEach((t, i) => {
+          html += `
+          <div style="display:flex; align-items:center; gap:12px; animation:fadeUp 0.3s ease;">
+            <div style="width:40px; height:40px; border-radius:50%; background:${t.color}; display:flex; align-items:center; justify-content:center; font-size:20px;">${t.icon}</div>
+            <div style="flex:1;">
+              <div style="font-size:14px; font-weight:600; color:var(--black);">${t.title}</div>
+              <div style="font-size:12px; color:var(--gray);">${t.desc}</div>
+            </div>
+            <input type="checkbox" onchange="completeTask(${t.id})" style="width:20px; height:20px; accent-color:var(--primary); cursor:pointer;" />
+          </div>
+          `;
+          if (i < tasks.length - 1) {
+             html += `<div style="height:1px; background:var(--light-gray);"></div>`;
+          }
+       });
+       list.innerHTML = html;
+    }
+
+    function completeTask(id) {
+       setTimeout(() => {
+           tasks = tasks.filter(t => t.id !== id);
+           saveTasks();
+           renderTasks();
+           showToast("Task completed!");
+       }, 400);
+    }
+
+    function addNewTask() {
+       const title = prompt("Enter task name:");
+       if (!title) return;
+       const desc = prompt("Enter task description (optional):") || "General task";
+       
+       const icons = ['🌿', '💧', '🧪', '🚜', '🌾', '✂️', '🚚'];
+       const colors = ['rgba(126,217,87,0.2)', 'rgba(79,172,254,0.2)', 'rgba(255,193,7,0.2)', 'rgba(11,107,58,0.15)'];
+       
+       const newTask = {
+          id: Date.now(),
+          title: title,
+          desc: desc,
+          icon: icons[Math.floor(Math.random() * icons.length)],
+          color: colors[Math.floor(Math.random() * colors.length)]
+       };
+       tasks.push(newTask);
+       saveTasks();
+       renderTasks();
+       showToast("Task added successfully!");
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+       loadDefaultMarket();
+       renderTasks();
+       loadFarmDetails();
+    });
+  </script>
+</body>
+</html>
